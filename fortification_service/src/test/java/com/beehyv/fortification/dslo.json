@@ -1,0 +1,140 @@
+{
+    "product": "rice",
+    "platform_name": "Rice Fortification",
+    "description": "This is rice fortification",
+    "categories": [
+        {
+            "name": "Raw Material",
+            "outside_platform": true
+        },
+        {
+            "name": "Premix",
+            "outside_platform": false
+        },
+        {
+            "name": "Rice Mix",
+            "outside_platform": true
+        },
+        {
+            "name": "FRK",
+            "outside_platform": false
+        },
+        {
+            "name": "Rice",
+            "outside_platform": true
+        },
+        {
+            "name": "Miller",
+            "outside_platform": false
+        }
+    ],
+    "stages": [
+        "Premix Manufacturer",
+        "FRK Manufacturer",
+        "Miller",
+        "Warehouse"
+    ],
+    "workflow": [
+        {
+            "name": "Premix Manufacturer",
+            "categories": [
+                {
+                    "name": "Premix",
+                    "type": "creation",
+                    "raw_materials": [
+                        "Raw Material"
+                    ],
+                    "target": [
+                       {
+                        "name": "FRK",
+                        "receive_lab_option": "OPTIONAL"
+                       }
+                    ],
+                    "dispatch_lab_option": "MANDATE"
+                }
+            ]
+        },
+        {
+            "name": "FRK Manufacturer",
+            "categories": [
+                {
+                    "name": "FRK",
+                    "type": "creation",
+                    "raw_materials": [
+                        "Rice Mix",
+                        "Premix"
+                    ],
+                    "target": [
+                        {
+                            "name": "Miller",
+                            "receive_lab_option": "OPTIONAL"
+                        },
+                        {
+                            "name": "Warehouse",
+                            "receive_lab_option": "OPTIONAL"
+                        }
+                    ],
+                    "dispatch_lab_option": "MANDATE"
+                }
+            ]
+        },
+        {
+            "name": "Miller",
+            "categories": [
+                {
+                    "name": "Miller",
+                    "type": "creation",
+                    "raw_materials": [
+                        "Rice",
+                        "FRK"
+                    ],
+                    "target": [
+                        {
+                            "name": "Warehouse",
+                            "receive_lab_option": "OPTIONAL"
+                        }
+                    ],
+                    "dispatch_lab_option": "OPTIONAL"
+                }
+            ]
+        },
+        {
+            "name": "Warehouse",
+            "categories": [
+                {
+                    "name": "Miller",
+                    "type": "dispatch",
+                    "raw_materials": [
+                        
+                    ],
+                    "target": [
+                        {
+                            "name": "Warehouse",
+                            "receive_lab_option": "OPTIONAL"
+                        }
+                    ],
+                    "dispatch_lab_option": "NA"
+                },
+                {
+                    "name": "FRK",
+                    "type": "dispatch",
+                    "raw_materials": [
+                        
+                    ],
+                    "target": [
+                        {
+                            "name": "Miller",
+                            "receive_lab_option": "OPTIONAL"
+                        },
+                        {
+                            "name": "Warehouse",
+                            "receive_lab_option": "OPTIONAL"
+                        }
+                    ],
+                    "dispatch_lab_option": "NA"
+                }
+            ]
+        }
+        
+    ]
+}

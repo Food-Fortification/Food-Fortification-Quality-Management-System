@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:activiti="http://activiti.org/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="Examples">
+    <process id="lot-default-miller-default" name="Lot Process" isExecutable="true">
+        <startEvent id="start" name="Start"></startEvent>
+        <userTask id="dispatched" name="dispatched">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+            </extensionElements>
+        </userTask>
+        <userTask id="lotReceived" name="lotReceived">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+            </extensionElements>
+        </userTask>
+        <userTask id="approved" name="approved">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener"/>
+            </extensionElements>
+        </userTask>
+        <userTask id="sentLotSampleToLabTest" name="sentLotSampleToLabTest">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener"/>
+            </extensionElements>
+        </userTask>
+        <userTask id="lotSampleInLab" name="lotSampleInLab">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+            </extensionElements>
+        </userTask>
+        <userTask id="lotSampleLabTestDone" name="lotSampleLabTestDone">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+            </extensionElements>
+        </userTask>
+        <userTask id="lotSampleRejected" name="lotSampleRejected">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+            </extensionElements>
+        </userTask>
+        <userTask id="toSendBackRejected" name="toSendBackRejected">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+            </extensionElements>
+        </userTask>
+        <userTask id="sentBackRejected" name="sentBackRejected">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+            </extensionElements>
+        </userTask>
+        <userTask id="receivedRejected" name="receivedRejected">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+            </extensionElements>
+        </userTask>
+        <userTask id="rejected" name="rejected">
+            <documentation>${config}</documentation>
+            <extensionElements>
+                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+            </extensionElements>
+        </userTask>
+        <endEvent id="theEnd"></endEvent>
+        <sequenceFlow id="flow22" sourceRef="approved" targetRef="theEnd"></sequenceFlow>
+        <sequenceFlow id="flow21" sourceRef="rejected" targetRef="theEnd"></sequenceFlow>
+        <sequenceFlow id="flow20" sourceRef="receivedRejected" targetRef="rejected"></sequenceFlow>
+        <sequenceFlow id="flow19" sourceRef="sentBackRejected" targetRef="receivedRejected"></sequenceFlow>
+        <sequenceFlow id="flow18" sourceRef="toSendBackRejected" targetRef="sentBackRejected"></sequenceFlow>
+        <sequenceFlow id="flow17" sourceRef="lotSampleLabTestDone" targetRef="toSendBackRejected">
+            <conditionExpression xsi:type="tFormalExpression">${lotSampleLabTestDone_toSendBackRejected == true}
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow16" sourceRef="lotSampleLabTestDone" targetRef="approved">
+            <conditionExpression xsi:type="tFormalExpression">${lotSampleLabTestDone_approved == true}
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow15" sourceRef="lotSampleInLab" targetRef="lotSampleLabTestDone">
+            <conditionExpression xsi:type="tFormalExpression">${lotSampleInLab_lotSampleLabTestDone == true}
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow14" sourceRef="lotSampleInLab" targetRef="lotSampleRejected">
+            <conditionExpression xsi:type="tFormalExpression">${lotSampleInLab_lotSampleRejected == true}
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow13" sourceRef="sentLotSampleToLabTest" targetRef="lotSampleInLab"></sequenceFlow>
+        <sequenceFlow id="flow10" sourceRef="lotSampleRejected" targetRef="approved">
+            <conditionExpression xsi:type="tFormalExpression">${lotSampleRejected_approved == true}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow8" sourceRef="lotSampleRejected" targetRef="sentLotSampleToLabTest">
+            <conditionExpression xsi:type="tFormalExpression">${lotSampleRejected_sentLotSampleToLabTest == true}
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow7" sourceRef="lotSampleRejected" targetRef="toSendBackRejected">
+            <conditionExpression xsi:type="tFormalExpression">${lotSampleRejected_toSendBackRejected == true}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow6" sourceRef="lotReceived" targetRef="approved">
+            <conditionExpression xsi:type="tFormalExpression">${lotReceived_approved == true}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow4" sourceRef="lotReceived" targetRef="sentLotSampleToLabTest">
+            <conditionExpression xsi:type="tFormalExpression">${lotReceived_sentLotSampleToLabTest == true}
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow3" sourceRef="lotReceived" targetRef="toSendBackRejected">
+            <conditionExpression xsi:type="tFormalExpression">${lotReceived_toSendBackRejected == true}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flow2" sourceRef="dispatched" targetRef="lotReceived"></sequenceFlow>
+        <sequenceFlow id="flow1" sourceRef="start" targetRef="dispatched"></sequenceFlow>
+    </process>
+</definitions>

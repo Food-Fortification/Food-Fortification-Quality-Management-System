@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.beehyv</groupId>
+		<artifactId>parent</artifactId>
+		<version>0.0.1</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.beehyv</groupId>
+	<artifactId>Immudb</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>Immudb</name>
+	<description>To support Immudb integration</description>
+	<properties>
+		<java.version>17</java.version>
+		<springdoc.version>1.6.13</springdoc.version>
+	</properties>
+	<packaging>war</packaging>
+	<dependencies>
+		<dependency>
+			<groupId>com.beehyv</groupId>
+			<artifactId>parent</artifactId>
+			<version>0.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>io.codenotary</groupId>
+			<artifactId>immudb4j</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.2.20</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>9.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+					<classifier>exec</classifier>
+				</configuration>
+			</plugin>
+		</plugins>
+		<finalName>immudb</finalName>
+	</build>
+	<repositories>
+		<repository>
+			<id>beehyv-gitlab-maven</id>
+			<url>https://git.beehyv.com/api/v4/groups/228/-/packages/maven</url>
+		</repository>
+	</repositories>
+
+</project>
