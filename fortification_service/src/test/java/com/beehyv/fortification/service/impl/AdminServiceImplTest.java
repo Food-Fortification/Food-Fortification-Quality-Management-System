@@ -2,9 +2,11 @@ package com.beehyv.fortification.service.impl;
 
 
 import com.beehyv.fortification.dto.requestDto.*;
+import com.beehyv.fortification.dto.responseDto.LabNameAddressResponseDto;
 import com.beehyv.fortification.dto.responseDto.ListResponse;
 import com.beehyv.fortification.entity.*;
 import com.beehyv.fortification.helper.IamServiceRestHelper;
+import com.beehyv.fortification.helper.LabServiceManagementHelper;
 import com.beehyv.fortification.manager.*;
 import com.beehyv.parent.keycloakSecurity.KeycloakInfo;
 import org.junit.jupiter.api.AfterEach;
@@ -16,10 +18,7 @@ import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoSettings;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,7 +35,8 @@ public class AdminServiceImplTest {
     @Mock
     KeycloakInfo keycloakInfo;
     Category category = new Category();
-    MockedStatic<IamServiceRestHelper> mockedStatic;
+    MockedStatic<IamServiceRestHelper> mockedStaticIam;
+    MockedStatic<LabServiceManagementHelper> mockedStaticLab;
     @Mock
     private BatchManager batchManager;
     @Mock
@@ -72,15 +72,21 @@ public class AdminServiceImplTest {
         when(roleCategoryStateManager.create(any())).thenReturn(new RoleCategoryState());
         when(stateManager.findByName(any())).thenReturn(new State());
 
-        mockedStatic = org.mockito.Mockito.mockStatic(IamServiceRestHelper.class);
+        mockedStaticIam = org.mockito.Mockito.mockStatic(IamServiceRestHelper.class);
         when(IamServiceRestHelper.fetchResponse(any(), (Class<Object>) any(), any())).thenReturn(List.of(1));
+
+        Map<Long, LabNameAddressResponseDto> res = new HashMap<>();
+        res.put(1L, new LabNameAddressResponseDto());
+        mockedStaticLab = org.mockito.Mockito.mockStatic(LabServiceManagementHelper.class);
+        when(LabServiceManagementHelper.fetchLabNameAddressByLotIds(any(), any(), any())).thenReturn(res);
 
         when(keycloakInfo.getAccessToken()).thenReturn("accessToken");
     }
 
     @AfterEach
     public void tearDown() {
-        mockedStatic.close();
+        mockedStaticIam.close();
+        mockedStaticLab.close();
     }
 
     @Test

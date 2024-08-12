@@ -197,6 +197,7 @@ class LotServiceImplTest {
         dto.setExternalTargetManufacturerId("1");
         dto.setTargetManufacturerId(1L);
 
+        batch.setManufacturerId(1L);
         when(batchManager.findById(any())).thenReturn(batch);
         when(manager.create(any())).thenReturn(entity);
         when(manager.findById(any())).thenReturn(entity);
@@ -526,6 +527,7 @@ class LotServiceImplTest {
         addressResponseDto.getVillage().getDistrict().getState().setCountry(new CountryResponseDto());
 
         when(IamServiceRestHelper.getManufacturerAddress(any(), anyString())).thenReturn(addressResponseDto);
+        when(keycloakInfo.getUserInfo()).thenReturn(Map.of("manufacturerId", 1L, "roles", new HashSet<>()));
 
         Task mockTask = mock(Task.class);
 

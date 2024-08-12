@@ -32,14 +32,12 @@ class MessageManagerTest {
     @InjectMocks
     private MessageManager messageManager;
 
-    private ObjectMapper objectMapper;
     private MockedStatic<IamServiceRestHelper> mockStatic;
 
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        objectMapper = new ObjectMapper();
         mockStatic = mockStatic(IamServiceRestHelper.class);
     }
 
@@ -65,7 +63,7 @@ class MessageManagerTest {
 
 
     @Test
-    void testStatusChangeHandlerSynchronously_actionTypeModule() throws JsonProcessingException {
+    void testStatusChangeHandlerSynchronously_actionTypeModule() {
         // Prepare test data
         EntityStateRequestDTO dto = new EntityStateRequestDTO();
         dto.setBatchId(1L);
@@ -86,11 +84,11 @@ class MessageManagerTest {
         messageManager.statusChangeHandlerSynchronously(dto, state, userInfo, manufacturerId, token, isFlowSkipped);
 
         // Verify that the sendMessage method was called
-        verify(messageManager).sendMessage(any(), any());
+        verify(messageManager, times(2)).sendMessage(any(), any());
     }
 
     @Test
-    void testStatusChangeHandlerSynchronously_actionTypeLab() throws JsonProcessingException {
+    void testStatusChangeHandlerSynchronously_actionTypeLab() {
         // Prepare test data
         EntityStateRequestDTO dto = new EntityStateRequestDTO();
         dto.setBatchId(1L);
@@ -111,7 +109,7 @@ class MessageManagerTest {
         messageManager.statusChangeHandlerSynchronously(dto, state, userInfo, manufacturerId, token, isFlowSkipped);
 
         // Verify that the sendMessage method was called
-        verify(messageManager).sendMessage(any(), any());
+        verify(messageManager, times(2)).sendMessage(any(), any());
     }
 
     @Test
@@ -139,16 +137,16 @@ class MessageManagerTest {
         Boolean isBatchTested = true;
         AddressResponseDto addressResponseDto = new AddressResponseDto(1L, "null", "null", "null", new VillageResponseDto(1L, "a", new DistrictResponseDto(
                 1L,
-                "null",
-                "null",
+                "a",
                 "",
+                "1",
                 "",
-                new StateResponseDto(1L, "null", "null", new CountryResponseDto(1L, "a", "null")))), 10.0, 10.0);
+                new StateResponseDto(1L, "", "1", new CountryResponseDto(1L, "a", "1")))), 10.0, 10.0);
         when(IamServiceRestHelper.fetchResponse(any(), (Class<Object>) any(), any())).thenReturn(addressResponseDto);
         // Call the method under test
         messageManager.sendBatchUpdate(manufacturerId, categoryId, quantityDifference, state, userInfo, token, date, testResult, isBatchTested, batchId);
 
-        verify(messageManager).sendMessage(any(), any());
+        verify(messageManager, times(1)).sendMessage(any(), any());
     }
 
     @Test
