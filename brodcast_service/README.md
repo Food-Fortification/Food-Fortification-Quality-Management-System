@@ -1,4 +1,4 @@
-# Fortification Service
+# Broadcast Service
 
 
 
@@ -17,7 +17,7 @@ Follow these steps to set up the project on your local machine:
 
    ```bash
    git clone https://github.com/Rice-Fortification-DPG/Rice-Fortification-DPG.git
-   cd Rice-Fortification-DPG/fortification_service
+   cd Rice-Fortification-DPG/brodcast_service
    ```
 
 2. **Install dependencies:**
@@ -35,7 +35,7 @@ Follow these steps to set up the project on your local machine:
    ```bash
    mvn compile
    ```
-4. Add the properties in the [application_dev.properties](src%2Fmain%2Fresources%2Fapplication_dev.properties) with all the required configurations.
+4. Add the properties in the [application_dev.properties](src%2Fmain%2Fresources%application_dev.properties) with all the required configurations.
 
 5. **Run the application:**
 
