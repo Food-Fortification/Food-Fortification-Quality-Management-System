@@ -43,8 +43,6 @@ public interface BatchService {
 
     ListResponse<BatchListResponseDTO> getFilteredBatch(String search);
 
-    Long createSelfDeclardBatch(PremixBatchByFrkDTO premixBatchByFrkDTO);
-
     BatchResponseDto getBatchByIdForEventUpdate(Long id);
 
     void eventUpdateBody(String encrypted, EventTest param);

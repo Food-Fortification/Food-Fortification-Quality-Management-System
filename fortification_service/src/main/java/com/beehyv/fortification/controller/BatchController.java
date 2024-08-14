@@ -128,12 +128,6 @@ public class BatchController {
         return new ResponseEntity<>(batchService.getFilteredBatch(search),HttpStatus.OK);
     }
 
-    @PostMapping("/self-declared/premix")
-    public ResponseEntity<?>createSelfDeclaredPremixBatch(@RequestBody PremixBatchByFrkDTO dto){
-        Long id = batchService.createSelfDeclardBatch(dto);
-        return new ResponseEntity<>(id, HttpStatus.CREATED);
-    }
-
     @GetMapping("/event/{batchId}")
     public ResponseEntity<?> getBathByIdForEventUpdate(@PathVariable("batchId") Long id, @PathVariable Long categoryId) {
         return ResponseEntity.ok(batchService.getBatchByIdForEventUpdate(id));

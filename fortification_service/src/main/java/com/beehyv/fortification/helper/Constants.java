@@ -25,12 +25,6 @@ public class Constants {
     @Value("${LAB_BASE_URL}")
     public String LAB_BASE_URL;
 
-// TODO :: delete commented
-//    public static Map<String, String> categoryNamePrefixMap = Map.of(
-//            "PREMIX", "P",
-//            "FRK", "F",
-//            "MILLER", "R"
-//    );
     public static Map<String, List<String>> sampleStateMap = Map.of(
             "toReceive", List.of("Receive Sample"),
             "inProgress", List.of("Submit Test Reports", "Reject Sample without testing")

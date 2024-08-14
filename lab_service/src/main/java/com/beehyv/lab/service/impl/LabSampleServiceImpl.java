@@ -449,4 +449,13 @@ public class LabSampleServiceImpl implements LabSampleService {
         if (labSamples.isEmpty())return new ArrayList<>();
         return labSamples.stream().map(mapper::mapEntityToDtoLabSample).toList();
     }
+
+    @Override
+    public ListResponse<LabSampleResponseDto> getAllLabSamplesForSuperAdmins(Integer pageNumber, Integer pageSize, SearchListRequest searchRequest) {
+        List<Long> testManufacturerIds = getTestManufacturerIds();
+        this.setSampleState(searchRequest);
+        List<LabSample> labSamples = labSampleManager.findAllSamplesForSuperAdmin(pageNumber, pageSize, searchRequest, testManufacturerIds);
+        Long count = labSampleManager.getCountForSuperAdmin(labSamples.size(), pageNumber, pageSize, searchRequest, testManufacturerIds);
+        return ListResponse.from(labSamples, mapper::mapEntityToDtoLabSample, count);
+    }
 }

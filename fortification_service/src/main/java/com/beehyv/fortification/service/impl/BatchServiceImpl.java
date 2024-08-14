@@ -39,6 +39,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.NoResultException;
 import javax.crypto.Cipher;
@@ -111,7 +113,6 @@ public class BatchServiceImpl implements BatchService {
     @Autowired
     private EventBodyDao eventBodyDao;
 
-    private final List<String> percentagePremixRequired = List.of("2");
     private final BatchStateGeoManager batchStateGeoManager;
 
     private final String[] lotDetailsColumnNames = {"SL. NO", "Name", "Manufacturer Lot Number", "Manufacturing Date", "Dispatch Date", "Expiry Date", "Manufacturer", "License Number", "Quantity Used", "Stage"};
@@ -220,8 +221,11 @@ public class BatchServiceImpl implements BatchService {
     public void updateBatch(BatchRequestDto batchRequestDto) {
         Long manufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
         Batch existingBatch;
-        existingBatch = batchManager.findByIdAndManufacturerId(batchRequestDto.getId(), manufacturerId);
-
+        if (categoryManager.isCategorySuperAdmin(batchRequestDto.getCategoryId(), RoleCategoryType.MODULE)) {
+            existingBatch = batchManager.findById(batchRequestDto.getId());
+        } else {
+            existingBatch = batchManager.findByIdAndManufacturerId(batchRequestDto.getId(), manufacturerId);
+        }
         if (!Objects.equals(existingBatch.getState().getName(), "batchToDispatch")
                 && !Objects.equals(existingBatch.getState().getName(), "partiallyDispatched")
                 && !Objects.equals(existingBatch.getState().getName(), "fullyDispatched")) {
@@ -244,10 +248,18 @@ public class BatchServiceImpl implements BatchService {
 
     public void validateAndUpdateBatchData(BatchRequestDto batchRequestDto, Batch entity, Boolean state) {
         Long manufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
-        entity.setManufacturerId(manufacturerId);
+        if (!categoryManager.isCategorySuperAdmin(batchRequestDto.getCategoryId(), RoleCategoryType.MODULE)) {
+            entity.setManufacturerId(manufacturerId);
+        }
+        String url = Constants.IAM_SERVICE_URL + "/manufacturer-category/can-skip-raw-materials";
+        UriComponents uriBuilder = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("manufacturerId", manufacturerId)
+                .queryParam("categoryId", batchRequestDto.getCategoryId())
+                .build();
+        Boolean canSkipRawMaterials = IamServiceRestHelper.fetchResponse(uriBuilder.toUriString(), Boolean.class, keycloakInfo.getAccessToken());
 
         AtomicReference<Double> quantitySum = new AtomicReference<>(0D);
-        if (Boolean.TRUE.equals(state)) {
+        if (state && !canSkipRawMaterials) {
             List<Lot> sourceLots = lotManager.getAllByIds(batchRequestDto.getMixes().stream().map(MixMappingRequestDto::getSourceLotId).collect(Collectors.toList()));
             if (sourceLots.stream().filter(d -> !Objects.equals(d.getTargetManufacturerId(), manufacturerId)).toList().size() > 0) {
                 throw new ValidationException("All lots should belongs to your organization");
@@ -285,7 +297,7 @@ public class BatchServiceImpl implements BatchService {
                 }
             });
         }
-        if (Boolean.FALSE.equals(state)) {
+        if (!state) {
             entity.getMixes().forEach(m -> quantitySum.updateAndGet(v -> v + m.getQuantityUsed() * m.getUom().getConversionFactorKg()));
         }
         if (batchRequestDto.getTotalQuantity() > 1.1 * quantitySum.get() || batchRequestDto.getTotalQuantity() < 0.9 * quantitySum.get()) {
@@ -313,7 +325,11 @@ public class BatchServiceImpl implements BatchService {
         Batch batch;
         Set<String> roles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
         Long manufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
-        batch = batchManager.findByIdAndManufacturerId(id, manufacturerId);
+        if (categoryManager.isCategorySuperAdmin(categoryId, RoleCategoryType.MODULE) || categoryManager.isCategoryInspectionUser(categoryId, RoleCategoryType.MODULE) || roles.stream().anyMatch(r -> r.contains("MONITOR"))) {
+            batch = batchManager.findById(id);
+        } else {
+            batch = batchManager.findByIdAndManufacturerId(id, manufacturerId);
+        }
         return getBatchDetailsHelper(batch);
     }
 
@@ -718,8 +734,11 @@ public class BatchServiceImpl implements BatchService {
     @Override
     public Boolean checkLabAccess(Long batchId) {
         Batch batch = batchManager.findById(batchId);
+        if (categoryManager.isCategorySuperAdmin(batch.getCategory().getId(), RoleCategoryType.MODULE)) return true;
         Set<String> roles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
         if (roles.stream().anyMatch(r -> r.contains("MONITOR"))) return true;
+        if (categoryManager.isCategoryInspectionUser(batch.getCategory().getId(), RoleCategoryType.MODULE))
+            return true;
         Long manufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
         return Objects.equals(manufacturerId, batch.getManufacturerId()) || batch.getLots().stream().anyMatch(d -> Objects.equals(d.getTargetManufacturerId(), manufacturerId));
     }
@@ -796,120 +815,6 @@ public class BatchServiceImpl implements BatchService {
         ListResponse<BatchListResponseDTO> dtos = ListResponse.from(batches, batchListMapper::toListDTO, count);
         return dtos;
     }
-
-    @Override
-    public Long createSelfDeclardBatch(PremixBatchByFrkDTO premixBatchByFrkDTO){
-        if(premixBatchByFrkDTO.getExpiryDate().compareTo(premixBatchByFrkDTO.getManufacturingDate()) <= 0)
-            throw new CustomException("Expiry date should not be on or before manufacturing date", HttpStatus.BAD_REQUEST);
-        BatchRequestDto batchRequestDto = new BatchRequestDto();
-        batchRequestDto.setCategoryId(premixBatchByFrkDTO.getCategoryId());
-        batchRequestDto.setDateOfManufacture(premixBatchByFrkDTO.getManufacturingDate());
-        batchRequestDto.setDateOfExpiry(premixBatchByFrkDTO.getExpiryDate());
-        batchRequestDto.setFssaiLicenseId(premixBatchByFrkDTO.getLicenseNumber());
-        batchRequestDto.setBatchProperties(premixBatchByFrkDTO.getBatchProperties());
-        batchRequestDto.setTotalQuantity(premixBatchByFrkDTO.getTotalQuantity());
-        batchRequestDto.setBatchDocs(premixBatchByFrkDTO.getBatchDocRequestDtos());
-        Category category = categoryManager.findById(batchRequestDto.getCategoryId());
-        Batch batch = batchMapper.toEntity(batchRequestDto);
-        batch.getBatchProperties().stream().filter(batchProperty -> "createdBy".equals(batchProperty.getName())).findFirst().get().setValue(premixBatchByFrkDTO.getName());
-        batch.setManufacturerId(premixBatchByFrkDTO.getVendorId());
-        premixBatchByFrkDTO.getSizeUnits().stream().forEach(sizeUnit -> sizeUnit.setUom(uomManager.findByConversionFactor(1L)));
-        batch.setSizeUnits(premixBatchByFrkDTO.getSizeUnits());
-        setGeneratedBatchNumber(batch,batch.getDateOfManufacture(), batch.getManufacturerId(), category);
-        batch.setLastActionDate(batch.getDateOfManufacture());
-        batch.setDistrictGeoId(premixBatchByFrkDTO.getVendorAddress().getVillage().getDistrict().getGeoId());
-        batch.setState(stateManager.findByName("fullyDispatched"));
-        batch.setIsLabTested(true);
-        String categoryName = category.getName().toLowerCase();
-        batch.setUom(uomManager.findByConversionFactor(1L));
-        batch.setTotalQuantity(batchRequestDto.getTotalQuantity());
-        batch.setRemainingQuantity(0D);
-        batch.getSizeUnits().stream().findFirst().get().setBatch(batch);
-        Batch entity = batchManager.create(batch);
-
-        Lot lot = new Lot();
-        Long targetManufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
-        AddressResponseDto targetAddress =(IamServiceRestHelper.getManufacturerAddress(targetManufacturerId,keycloakInfo.getAccessToken()));
-        Integer lotSequence = Optional.ofNullable(batch.getLotSequence()).orElse(0);
-        lot.setLotNo(String.format("%s_L%02d", batch.getBatchNo(), lotSequence));
-        lot.setUom(batch.getUom());
-        lot.setIsReceivedAtTarget(true);
-        lot.setTargetManufacturerId(targetManufacturerId);
-        lot.setDateOfReceiving(batch.getDateOfManufacture());
-        lot.setDateOfAcceptance(batch.getDateOfManufacture());
-        lot.setIsTargetAccepted(true);
-        lot.setSourceDistrictGeoId(premixBatchByFrkDTO.getVendorAddress().getVillage().getDistrict().getGeoId());
-        lot.setTargetDistrictGeoId(targetAddress.getVillage().getDistrict().getGeoId());
-        lot.setSourceStateGeoId(premixBatchByFrkDTO.getVendorAddress().getVillage().getDistrict().getState().getGeoId());
-        lot.setTargetStateGeoId(targetAddress.getVillage().getDistrict().getState().getGeoId());
-        lot.setIsTargetAcknowledgedReport(true);
-        lot.setPrefetchedInstructions(batch.getPrefetchedInstructions());
-        lot.setTotalQuantity(batch.getTotalQuantity());
-        lot.setRemainingQuantity(batch.getTotalQuantity());
-        lot.setManufacturerId(batch.getManufacturerId());
-        lot.setUom(batch.getUom());
-        lot.setDateOfDispatch(batch.getDateOfManufacture());
-        lot.setCategory(batch.getCategory());
-        lot.setSourceBatchMapping(new HashSet<>());
-        lot.setBatch(batch, lot);
-        lot.setState(stateManager.findByName("approved"));
-        lot.setLastActionDate(lot.getDateOfReceiving());
-
-        Set<LotProperty> lotProperties = lot.getLotProperties();
-        if(lotProperties == null){
-            lotProperties = new HashSet<>();
-        }
-        LotProperty createdByLotProperty = new LotProperty(null, "createdBy", premixBatchByFrkDTO.getName(), lot);
-        lotProperties.add(createdByLotProperty);
-
-        Optional<BatchProperty> manufactureBatchNumber = batch.getBatchProperties().stream().filter(bp -> bp.getName().equals("manufacture_batchNumber")).findFirst();
-        LotProperty manufacturerLotNo = new LotProperty(null, "manufacture_lotNumber", manufactureBatchNumber.isPresent() ? manufactureBatchNumber.get().getValue() : "", lot);
-        lotProperties.add(manufacturerLotNo);
-        Lot savedLot = lotManager.create(lot);
-        premixBatchByFrkDTO.getSizeUnits().stream().forEach(sizeUnit -> sizeUnit.setBatch(batch));
-        premixBatchByFrkDTO.getSizeUnits().stream().forEach(sizeUnit -> sizeUnit.setLot(lot));
-        savedLot.setSizeUnits(premixBatchByFrkDTO.getSizeUnits());
-        entity.setSizeUnits(premixBatchByFrkDTO.getSizeUnits());
-        batchManager.update(entity);
-        lotManager.update(savedLot);
-        String qrCodeText = String.format("%s%s/%s/batch/code/%s", Constants.QRCODE_UI_URL, categoryName, category.getId(), batch.getUuid());
-        storageClient.save(qrCodeText, Constants.FORTIFICATION_BATCH_QR_CODE);
-        String qrCodeTextLot = String.format("%s%s/%s/lot/code/%s", Constants.QRCODE_UI_URL, categoryName, lot.getCategory().getId(), lot.getUuid());
-        storageClient.save(qrCodeTextLot,Constants.FORTIFICATION_LOT_QR_CODE);
-        BatchStateGeo batchStateGeo ;
-        GeoStateId batchGeoStateId = new GeoStateId(premixBatchByFrkDTO.getCategoryId(),
-                premixBatchByFrkDTO.getVendorId(), premixBatchByFrkDTO.getManufacturingDate());
-        try {
-            batchStateGeo = batchStateGeoManager.findByGeoStateId(batchGeoStateId);
-        } catch (NoResultException exception) {
-            batchStateGeo = new BatchStateGeo();
-            batchStateGeo.setGeoStateId(batchGeoStateId);
-            batchStateGeo.setPincode(premixBatchByFrkDTO.getVendorAddress().getPinCode());
-            batchStateGeo.setStateGeoId(premixBatchByFrkDTO.getVendorAddress().getVillage().getDistrict().getState().getGeoId());
-            batchStateGeo.setDistrictGeoId(premixBatchByFrkDTO.getVendorAddress().getVillage().getDistrict().getGeoId());
-            batchStateGeo.setCountryGeoId(premixBatchByFrkDTO.getVendorAddress().getVillage().getDistrict().getState().getCountry().getGeoId());
-        }
-        batchStateGeo.addSelfDeclaredBatchQuantities(premixBatchByFrkDTO.getTotalQuantity());
-        batchStateGeoManager.update(batchStateGeo);
-        log.info(" Completed Batch State Geo insertion");
-
-        LotStateGeo lotStateGeo;
-        GeoStateId geoStateId = new GeoStateId(premixBatchByFrkDTO.getCategoryId(), lot.getTargetManufacturerId(), premixBatchByFrkDTO.getManufacturingDate());
-        try {
-            lotStateGeo = lotStateGeoManager.findByCategoryIdAndManufacturerId(geoStateId);
-        } catch (NoResultException exception) {
-            lotStateGeo = new LotStateGeo();
-            lotStateGeo.setGeoStateId(geoStateId);
-            lotStateGeo.setStateGeoId(targetAddress.getVillage().getDistrict().getState().getGeoId());
-            lotStateGeo.setDistrictGeoId(targetAddress.getVillage().getDistrict().getGeoId());
-            lotStateGeo.setCountryGeoId(targetAddress.getVillage().getDistrict().getState().getCountry().getGeoId());
-        }
-        lotStateGeo.addSelfDeclaredLotQuantities(premixBatchByFrkDTO.getTotalQuantity());
-        lotStateGeoManager.update(lotStateGeo);
-        log.info(" Completed Lot State Geo insertion");
-        return lot.getId();
-    }
-
 
     @Override
     public BatchResponseDto getBatchByIdForEventUpdate(Long id) {

@@ -36,4 +36,7 @@ public interface LabSampleService {
     List<LabSampleResponseDto> getAllLabSamplesByBatchIdForEventUpdate(Long batchId);
 
     List<LabSampleResponseDto> getAllLabSamplesByLotIdForEventUpdate(Long lotId);
+
+    ListResponse<LabSampleResponseDto> getAllLabSamplesForSuperAdmins(Integer pageNumber, Integer pageSize, SearchListRequest searchRequest);
+
 }

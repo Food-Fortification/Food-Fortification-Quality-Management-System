@@ -42,12 +42,6 @@ public class LabServiceManagementHelper {
         jsonData.put("manufacturerId", batch.getManufacturerId());
         jsonData.put("stateId", 1);
         if (labId != null) jsonData.put("labId", labId);
-        // TODO:: remove commented
-//        if(batch.getCategory().getName().equals("PREMIX")){
-//            batch.getBatchProperties().stream()
-//                    .filter(b -> b.getName().equals("percentage_of_premix_required"))
-//                    .findFirst().ifPresent(b -> jsonData.put("percentageCategoryMix", b.getValue()));
-//        }
         ObjectMapper objectMapper = new ObjectMapper();
         HttpEntity<String> entity = null;
         try {
@@ -74,14 +68,6 @@ public class LabServiceManagementHelper {
         jsonData.put("manufacturerId", lot.getTargetManufacturerId());
         jsonData.put("stateId", 1);
         if (labId != null) jsonData.put("labId", labId);
-//        TODO:: remove commented
-//        if (lot.getCategory().getName().equals("PREMIX")) {
-//            if (lot.getBatch() != null) {
-//                lot.getBatch().getBatchProperties().stream()
-//                        .filter(b -> b.getName().equals("percentage_of_premix_required"))
-//                        .findFirst().ifPresent(b -> jsonData.put("percentageCategoryMix", b.getValue()));
-//            }
-//        }
         ObjectMapper objectMapper = new ObjectMapper();
         HttpEntity<String> entity = null;
         try {

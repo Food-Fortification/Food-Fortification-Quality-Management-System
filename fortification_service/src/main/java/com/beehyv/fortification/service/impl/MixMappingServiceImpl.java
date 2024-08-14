@@ -98,7 +98,11 @@ public class MixMappingServiceImpl implements MixMappingService {
             lotManager.update(sourceLot);
         });
         List<Lot> sourceLots = lotManager.getAllByIds(mixes.stream().map(MixMappingRequestDto::getSourceLotId).collect(Collectors.toList()));
-
+        if (!categoryManager.isCategorySuperAdmin(batch.getCategory().getId(), RoleCategoryType.MODULE)) {
+            if (sourceLots.stream().filter(d -> !Objects.equals(d.getTargetManufacturerId(), manufacturerId)).toList().size() > 0) {
+                throw new ValidationException("All lots should belongs to your organization");
+            }
+        }
         if (sourceLots.stream().filter(d -> !Objects.equals(d.getState().getName(), "approved")).toList().size() > 0) {
             throw new ValidationException("All lots should be approved");
         }
@@ -115,8 +119,8 @@ public class MixMappingServiceImpl implements MixMappingService {
             lot.setRemainingQuantity(remQuantity / lot.getUom().getConversionFactorKg());
             lotManager.save(lot);
         });
-        Set<MixMapping> mixMappings = mixes.stream().map(mapper::toEntity).peek(m -> m.setTargetBatch(new Batch(batchId))).collect(Collectors.toSet());
-        batch.getMixes().removeIf(m -> m.getId() != null);
+        Set<MixMapping> mixMappings = mixes.stream().map(mapper::toEntity).peek(m->m.setTargetBatch(new Batch(batchId))).collect(Collectors.toSet());
+        batch.getMixes().removeIf(m->m.getId()!=null);
         batch.getMixes().addAll(mixMappings);
         batchManager.update(batch);
     }

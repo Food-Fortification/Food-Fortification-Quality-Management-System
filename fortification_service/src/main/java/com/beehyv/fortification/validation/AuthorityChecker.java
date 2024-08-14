@@ -18,7 +18,6 @@ import java.util.*;
 @Aspect
 @Component("authorityChecker")
 public class AuthorityChecker {
-    List<String> rolesList = Arrays.asList("PREMIX_SUPERADMIN_MODULE", "FRK_SUPERADMIN_MODULE","MILLER_SUPERADMIN_MODULE");
     @Autowired
     private KeycloakInfo keycloakInfo;
     @Autowired
@@ -53,6 +52,9 @@ public class AuthorityChecker {
         return hasAdminCategoryAccess(Collections.singletonList(categoryId));
     }
     public boolean hasAdminCategoryAccess(List<Long> categoryIds) {
+        List<String> categories = categoryManager.findAllNamesByIndependentBatch(false);
+        List<String> rolesList = new ArrayList<>();
+        categories.forEach(name -> rolesList.add(name.toUpperCase() + "_SUPERADMIN_MODULE"));
         Set<String> roles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
         List<String> superList= roles.stream().filter(rolesList::contains).toList();
         if(superList.isEmpty())

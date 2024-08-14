@@ -923,8 +923,11 @@ public class LotServiceImpl implements LotService {
         Long manufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
         Set<String> roles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
         Lot entity = null;
-        entity = manager.findByIdAndManufacturerId(id, manufacturerId);
-
+        if (categoryManager.isCategorySuperAdmin(categoryId, RoleCategoryType.MODULE) || categoryManager.isCategoryInspectionUser(categoryId, RoleCategoryType.MODULE) || roles.stream().anyMatch(r -> r.contains("MONITOR"))) {
+            entity = manager.findById(id);
+        } else {
+            entity = manager.findByIdAndManufacturerId(id, manufacturerId);
+        }
         LotResponseDto lotResponseDto = mapper.toDto(entity);
         List<MixMappingResponseDto> mixes = mixMappingService.getAllMixMappingsBySourceLot(id, null, null)
                 .getData().stream()
@@ -932,7 +935,7 @@ public class LotServiceImpl implements LotService {
                     m.setQuantityUsed(m.getQuantityUsed() * m.getUom().getConversionFactorKg());
                     m.setUom(BaseMapper.uomMapper.toDto(uomManager.findByConversionFactor(1L)));
                 }).toList();
-        if (Objects.equals(entity.getTargetManufacturerId(), manufacturerId))
+        if (Objects.equals(entity.getTargetManufacturerId(), manufacturerId) || this.isSuperAdmin() || this.isInspectionUser())
             lotResponseDto.setUsage(mixes);
         return lotResponseDto;
     }
@@ -1002,8 +1005,13 @@ public class LotServiceImpl implements LotService {
     public ListResponse<LotResponseDto> getAllLotsBySourceCategoryId(Long categoryId, Long manufacturerId, String search, Integer pageNumber, Integer pageSize) {
         Long tokenManufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
         List<Lot> lots;
-        lots = manager.getAllLotsBySourceCategoryId(tokenManufacturerId, categoryId, search, pageNumber, pageSize);
-        return ListResponse.from(lots, mapper::toDto, manager.getCount(lots.size(), tokenManufacturerId, categoryId, search, pageNumber, pageSize));
+        if (isSuperAdmin()) {
+            lots = manager.getAllLotsBySourceCategoryId(manufacturerId, categoryId, search, pageNumber, pageSize);
+            return ListResponse.from(lots, mapper::toDto, manager.getCount(lots.size(), manufacturerId, categoryId, search, pageNumber, pageSize));
+        } else {
+            lots = manager.getAllLotsBySourceCategoryId(tokenManufacturerId, categoryId, search, pageNumber, pageSize);
+            return ListResponse.from(lots, mapper::toDto, manager.getCount(lots.size(), tokenManufacturerId, categoryId, search, pageNumber, pageSize));
+        }
     }
 
     @Override
@@ -1019,8 +1027,12 @@ public class LotServiceImpl implements LotService {
     @Override
     public Boolean checkLabAccess(Long lotId) {
         Lot lot = manager.findById(lotId);
+        if (categoryManager.isCategorySuperAdmin(lot.getCategory().getId(), RoleCategoryType.LAB))
+            return true;
         Set<String> roles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
         if (roles.stream().anyMatch(r -> r.contains("MONITOR"))) return true;
+        if (categoryManager.isCategorySuperAdmin(lot.getCategory().getId(), RoleCategoryType.LAB)) return true;
+        if (categoryManager.isCategoryInspectionUser(lot.getCategory().getId(), RoleCategoryType.LAB)) return true;
         Long manufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
         return Objects.equals(lot.getManufacturerId(), manufacturerId) || Objects.equals(lot.getTargetManufacturerId(), manufacturerId)
                 || lot.getTargetBatchMapping().stream()

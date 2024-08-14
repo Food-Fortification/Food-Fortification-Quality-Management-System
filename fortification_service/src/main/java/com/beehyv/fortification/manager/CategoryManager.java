@@ -8,10 +8,7 @@ import com.beehyv.parent.keycloakSecurity.KeycloakInfo;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 
@@ -45,6 +42,9 @@ public class CategoryManager extends BaseManager<Category, CategoryDao> {
         return dao.findAllByIndependentBatch(independentBatch, pageNumber, pageSize);
     }
 
+    public List<String> findAllNamesByIndependentBatch(Boolean independentBatch) {
+        return dao.findAllNamesByIndependentBatch(independentBatch);
+    }
     public Long getCountByIndependentBatch(int size, Boolean independentBatch, Integer pageNumber, Integer pageSize) {
         if(pageSize == null || pageNumber == null) {
             return ((Integer) size).longValue();
@@ -53,19 +53,27 @@ public class CategoryManager extends BaseManager<Category, CategoryDao> {
     }
 
     public List<Category> findAllBySuperUser(String roleCategoryType) {
-
+        List<String> categories = findAllNamesByIndependentBatch(false);
+        List<String> rolesList = new ArrayList<>();
+        categories.forEach(name -> rolesList.add(name.toUpperCase() + "_SUPERADMIN"));
+        rolesList.stream().map(d -> d + "_" + roleCategoryType).toList();
         Set<String> roles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
-        List<String> superList = roles.stream().filter(role -> role.endsWith("_SUPERADMIN")).toList();
+        List<String> superList = roles.stream().filter(rolesList::contains).toList();
         List<String> categoryNames = superList.stream().map(d -> d.split("_")[0]).toList();
         return this.findAllByNames(categoryNames);
     }
 
     public boolean isCategorySuperAdmin(Long categoryId, RoleCategoryType roleCategoryType) {
         Category category = this.findById(categoryId);
-
+        List<String> categories = findAllNamesByIndependentBatch(false);
+        List<String> rolesList = new ArrayList<>();
+        categories.forEach(name -> {
+            rolesList.add(name.toUpperCase() + "_SUPERADMIN_MODULE");
+            rolesList.add(name.toUpperCase() + "_SUPERADMIN_LAB");
+        });
         Set<String> roles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
-
-        return roles.stream().anyMatch(d -> d.equals(
+        List<String> superList = roles.stream().filter(rolesList::contains).toList();
+        return superList.stream().anyMatch(d -> d.equals(
                 String.format("%s_SUPERADMIN_%s", category.getName(), roleCategoryType.name())
         ));
     }
@@ -73,9 +81,14 @@ public class CategoryManager extends BaseManager<Category, CategoryDao> {
     public boolean isCategoryInspectionUser(Long categoryId, RoleCategoryType roleCategoryType) {
         Category category = this.findById(categoryId);
 
+        List<String> categories = findAllNamesByIndependentBatch(false);
+        List<String> rolesList = new ArrayList<>();
+        categories.forEach(name -> {
+            rolesList.add(name.toUpperCase() + "_INSPECTION_MODULE");
+        });
         Set<String> roles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
-
-        return roles.stream().anyMatch(d -> d.equals(
+        List<String> superList = roles.stream().filter(rolesList::contains).toList();
+        return superList.stream().anyMatch(d -> d.equals(
                 String.format("%s_INSPECTION_%s", category.getName(), roleCategoryType.name())
         ));
     }

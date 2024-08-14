@@ -67,6 +67,13 @@ public class CategoryDao extends BaseDao<Category>{
         return query.getResultList();
     }
 
+    public List<String> findAllNamesByIndependentBatch(Boolean independentBatch) {
+        return em.createQuery("SELECT c.name from Category c " +
+                                "where (:independentBatch is null or c.independentBatch = :independentBatch)",
+                        String.class)
+                .setParameter("independentBatch", independentBatch)
+                .getResultList();
+    }
     public Long getCountByIndependentBatch(Boolean independentBatch) {
         return em.createQuery("SELECT count (c.id) from Category c " +
                         "where (:independentBatch is null or c.independentBatch = :independentBatch)",
