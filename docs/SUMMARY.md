@@ -1,0 +1,18 @@
+# Table of contents
+
+* [DPG Document](README.md)
+  * [Introduction](dpg-document/introduction.md)
+  * [Background](dpg-document/background.md)
+  * [Vocabulary](dpg-document/vocabulary.md)
+  * [Description of the DPG](dpg-document/description-of-the-dpg/README.md)
+    * [Functionality](dpg-document/description-of-the-dpg/functionality.md)
+    * [Detailed Steps for initial setup with DSL](dpg-document/description-of-the-dpg/detailed-steps-for-initial-setup-with-dsl.md)
+    * [Platform Overview](dpg-document/description-of-the-dpg/platform-overview/README.md)
+      * [Technological Considerations](dpg-document/description-of-the-dpg/platform-overview/technological-considerations.md)
+      * [Technical Architecture](dpg-document/description-of-the-dpg/platform-overview/technical-architecture.md)
+      * [Technology Stack](dpg-document/description-of-the-dpg/platform-overview/technology-stack.md)
+      * [External Integrations](dpg-document/description-of-the-dpg/platform-overview/external-integrations.md)
+    * [Setup Guide](dpg-document/description-of-the-dpg/setup-guide.md)
+  * [Implementation Guide](dpg-document/implementation-guide.md)
+  * [Operational Documentation](dpg-document/operational-documentation.md)
+  * [Sample Implementation](dpg-document/sample-implementation.md)
