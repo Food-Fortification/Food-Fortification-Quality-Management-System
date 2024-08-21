@@ -16,7 +16,6 @@ public interface LabService {
     LabResponseDTO getNearestLab(String address, Long categoryId, Long manufacturerId);
     ListResponse<LabListResponseDTO> getAllActiveLabsForCategory(String search, Long manufacturerId, Long CategoryId, Integer pageNumber, Integer pageSize);
     Map<String, CategoryRoleResponseDto> getAllRoleCategoriesForLab(Long labId);
-    void validateNablCertificate(Long labId);
 
     ListResponse<LabDashboardResponseDto> getLabsAggregate(DashboardRequestDto dto);
     ListResponse<LabSampleDetailsResponseDto> getLabSamplesDetails(DashboardRequestDto dto, Long labId, String type);

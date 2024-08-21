@@ -12,9 +12,6 @@ import java.io.IOException;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CustomFilter implements Filter {
 
-
-;
-
     @Override
     public void init(FilterConfig filterConfig) {
     }

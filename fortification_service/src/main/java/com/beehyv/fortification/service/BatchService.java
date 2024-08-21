@@ -2,11 +2,9 @@ package com.beehyv.fortification.service;
 
 import com.beehyv.fortification.dto.requestDto.BatchRequestDto;
 import com.beehyv.fortification.dto.requestDto.EntityStateRequestDTO;
-import com.beehyv.fortification.dto.requestDto.PremixBatchByFrkDTO;
 import com.beehyv.fortification.dto.requestDto.SearchListRequest;
 import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.enums.ActionType;
-import org.springframework.core.io.Resource;
 import com.beehyv.fortification.enums.EventTest;
 import com.beehyv.fortification.enums.SampleTestResult;
 
@@ -25,8 +23,6 @@ public interface BatchService {
 
     boolean updateBatchStatus(Long categoryId, EntityStateRequestDTO entityStateRequestDTO, ActionType actionType, SampleTestResult sampleTestResult);
 
-    boolean dispatchExternalBatch(Long categoryId, EntityStateRequestDTO entityStateRequestDTO);
-
     List<StateResponseDto> getBatchActions(Long categoryId, Long batchId, ActionType actionType, String sampleState);
 
     ListResponse<BatchListResponseDTO> getBatchInventory(Long categoryId, Integer pageNumber, Integer pageSize, SearchListRequest searchListRequest);
@@ -38,8 +34,6 @@ public interface BatchService {
     Boolean checkLabAccess(Long batchId);
 
     void updateBatchInspectionStatus(Long batchId, Boolean isBlocked);
-
-    Resource getBatchInventoryExcel(ListResponse<BatchListResponseDTO> batches);
 
     ListResponse<BatchListResponseDTO> getFilteredBatch(String search);
 

@@ -7,8 +7,6 @@ import com.beehyv.iam.dto.responseDto.ManufacturerDetailsResponseDto;
 import com.beehyv.iam.dto.responseDto.ManufacturerResponseDto;
 import com.beehyv.iam.enums.GeoType;
 import com.beehyv.iam.enums.UserType;
-import com.beehyv.iam.model.Manufacturer;
-import com.beehyv.iam.manager.ManufacturerManager;
 import com.beehyv.iam.service.ManufacturerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,7 +22,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ManufacturerController {
     private final ManufacturerService manufacturerService;
-    private final ManufacturerManager manufacturerManager;
     @PostMapping
     public ResponseEntity<?> createManufacturer(@Valid @RequestBody ManufacturerRequestDto manufacturerRequestDto){
         manufacturerService.create(manufacturerRequestDto, null);
@@ -34,11 +31,6 @@ public class ManufacturerController {
     @PostMapping("/material-manufacturers")
     public ResponseEntity<?> createManufacturerMaterialSources(@Valid @RequestBody ManufacturerRequestDto manufacturerRequestDto){
         return new ResponseEntity<>(manufacturerService.createManufacturer(manufacturerRequestDto), HttpStatus.CREATED);
-    }
-
-    @GetMapping("/material-manufacturers/licenseNo")
-    public ResponseEntity<?> getManufacturerMaterialSources(@RequestParam String licenseNo, @RequestParam Long categoryId){
-        return new ResponseEntity<>(manufacturerService.getMaterialManufacturer(licenseNo, categoryId), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -134,16 +126,6 @@ public class ManufacturerController {
         return ResponseEntity.ok(manufacturerService.getAllManufacturersBySearchAndFilter(searchRequest, pageNumber, pageSize));
     }
 
-    @GetMapping("/externalManufacturerId/{externalManufacturerId}")
-    public ResponseEntity<?> getManufacturerIdByExternalManufacturerId(@PathVariable String externalManufacturerId){
-        return new ResponseEntity<>(manufacturerService.getManufacturerIdByExternalManufacturerId(externalManufacturerId), HttpStatus.OK);
-    }
-
-    @GetMapping("/manufacturerId/{manufacturerId}")
-    public ResponseEntity<?> getExternalManufacturerIdByManufacturerId(@PathVariable Long manufacturerId){
-        return new ResponseEntity<>(manufacturerService.getExternalManufacturerIdByManufacturerId(manufacturerId), HttpStatus.OK);
-    }
-
     @GetMapping("agency/{agency}/list")
     public ResponseEntity<?> getManufacturerIdsByAgency(@PathVariable String agency){
         return new ResponseEntity<>(manufacturerService.getManufacturerIdsByAgency(agency), HttpStatus.OK);
@@ -176,21 +158,4 @@ public class ManufacturerController {
     public ResponseEntity<?> getManufacturerNamesByIdsAndCategoryId(@RequestBody List<Long> manufacturerIds, @PathVariable Long categoryId){
         return new ResponseEntity<>(manufacturerService.getManufacturerNamesByIdsAndCategoryId(manufacturerIds, categoryId), HttpStatus.OK);
     }
-
-    @GetMapping("fssai/licenseNo")
-    public ResponseEntity<?> validateFssaiLicenseNo(@RequestParam String licenseNo, @RequestParam Long categoryId){
-        return new ResponseEntity<>(manufacturerService.validateFssaiLicenseNo(licenseNo, categoryId), HttpStatus.OK);
-    }
-
-    @GetMapping("licenseNumber/id/{id}")
-    public ResponseEntity<String> findLicenseNumberById(@PathVariable Long id) {
-        String licenseNumber = manufacturerService.findLicenseNumberById(id);
-            return new ResponseEntity<>(licenseNumber, HttpStatus.OK);
-    }
-    @GetMapping("licenseNumber/{name}")
-    public ResponseEntity<String> findLicenseNumberByName(@PathVariable String name) {
-        String licenseNumber = manufacturerService.findLicenseNumberByName(name);
-        return new ResponseEntity<>(licenseNumber, HttpStatus.OK);
-    }
-
 }

@@ -32,13 +32,6 @@ public class WastageController {
 
     }
 
-    @PostMapping("/external")
-    public ResponseEntity<?> createExternalWastage(
-            @PathVariable Long categoryId, @PathVariable("entityId") String entityNo, @PathVariable("wastageType") WastageType wastageType,@Valid @RequestBody WastageRequestDto dto) {
-
-        return new ResponseEntity<>(service.createExternalLotWastage(dto, entityNo), HttpStatus.CREATED);
-    }
-
     @GetMapping("{id}")
     public ResponseEntity<WastageResponseDto> getWastageById(
             @PathVariable Long categoryId, @PathVariable Long entityId, @PathVariable("id") Long id) {

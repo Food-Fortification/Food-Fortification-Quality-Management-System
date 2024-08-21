@@ -42,17 +42,6 @@ class ManufacturerControllerTest {
     }
 
     @Test
-    void testGetManufacturerMaterialSources() {
-        NameAddressResponseDto responseDto = new NameAddressResponseDto();
-        when(manufacturerService.getMaterialManufacturer(anyString(), anyLong())).thenReturn(responseDto);
-
-        ResponseEntity<?> response = manufacturerController.getManufacturerMaterialSources("licenseNo", 1L);
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(responseDto, response.getBody());
-    }
-
-    @Test
     void testGetAllManufacturers() {
         ListResponse<ManufacturerResponseDto> responseList = new ListResponse<>();
         when(manufacturerService.getALlManufacturers(anyString(), any(), any())).thenReturn(responseList);
@@ -208,28 +197,6 @@ class ManufacturerControllerTest {
     }
 
     @Test
-    void testGetManufacturerIdByExternalManufacturerId() {
-        Long manufacturerId = 1L;
-        when(manufacturerService.getManufacturerIdByExternalManufacturerId(anyString())).thenReturn(manufacturerId);
-
-        ResponseEntity<?> response = manufacturerController.getManufacturerIdByExternalManufacturerId("externalId");
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(manufacturerId, response.getBody());
-    }
-
-    @Test
-    void testGetExternalManufacturerIdByManufacturerId() {
-        String externalManufacturerId = "externalId";
-        when(manufacturerService.getExternalManufacturerIdByManufacturerId(anyLong())).thenReturn(externalManufacturerId);
-
-        ResponseEntity<?> response = manufacturerController.getExternalManufacturerIdByManufacturerId(1L);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(externalManufacturerId, response.getBody());
-    }
-
-    @Test
     void testGetManufacturerIdsByAgency() {
         List<Long> manufacturerIds = List.of(1L, 2L, 3L);
         when(manufacturerService.getManufacturerIdsByAgency(anyString())).thenReturn(manufacturerIds);
@@ -295,25 +262,4 @@ class ManufacturerControllerTest {
         assertEquals(manufacturerNames, response.getBody());
     }
 
-    @Test
-    void testValidateFssaiLicenseNo() {
-        NameAddressResponseDto responseString = new NameAddressResponseDto();
-        when(manufacturerService.validateFssaiLicenseNo(anyString(), anyLong())).thenReturn(responseString);
-
-        ResponseEntity<?> response = manufacturerController.validateFssaiLicenseNo("licenseNo", 1L);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(responseString, response.getBody());
-    }
-
-    @Test
-    void testFindLicenseNumberByName() {
-        String licenseNumber = "License123";
-        when(manufacturerService.findLicenseNumberByName(anyString())).thenReturn(licenseNumber);
-
-        ResponseEntity<String> response = manufacturerController.findLicenseNumberByName("name");
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(licenseNumber, response.getBody());
-    }
 }

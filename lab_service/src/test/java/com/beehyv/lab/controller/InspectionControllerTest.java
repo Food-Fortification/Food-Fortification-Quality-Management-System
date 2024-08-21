@@ -1,6 +1,5 @@
 package com.beehyv.lab.controller;
 
-import com.beehyv.lab.dto.external.ExternalInspectionRequestDto;
 import com.beehyv.lab.dto.requestDto.InspectionRequestDTO;
 import com.beehyv.lab.dto.responseDto.InspectionResponseDTO;
 import com.beehyv.lab.dto.responseDto.ListResponse;
@@ -60,19 +59,6 @@ class InspectionControllerTest {
         verifyNoMoreInteractions(inspectionService);
     }
 
-    @Test
-    void testCreateExternalInspection() {
-        ExternalInspectionRequestDto dto = new ExternalInspectionRequestDto();
-
-        when(inspectionService.createExternalInspection(dto)).thenReturn(1L);
-
-        ResponseEntity<?> responseEntity = inspectionController.createExternalInspection(dto);
-
-        assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
-
-        verify(inspectionService, times(1)).createExternalInspection(dto);
-        verifyNoMoreInteractions(inspectionService);
-    }
 
     @Test
     void testUpdate() {

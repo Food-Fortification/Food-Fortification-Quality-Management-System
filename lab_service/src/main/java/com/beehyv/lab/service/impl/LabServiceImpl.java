@@ -5,9 +5,6 @@ import com.beehyv.lab.dto.requestDto.SearchListRequest;
 import com.beehyv.lab.dto.responseDto.*;
 import com.beehyv.lab.entity.*;
 import com.beehyv.lab.helper.Constants;
-import com.beehyv.lab.helper.ExternalRestHelper;
-import com.beehyv.lab.helper.RestHelper;
-import com.beehyv.lab.manager.ExternalMetaDataManager;
 import com.beehyv.lab.manager.LabCategoryManager;
 import com.beehyv.lab.manager.LabManager;
 import com.beehyv.lab.manager.LabManufacturerCategoryManager;
@@ -29,8 +26,6 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.stream.Collectors;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 
 @Transactional
@@ -43,9 +38,7 @@ public class LabServiceImpl implements LabService {
     private final LabCategoryManager labCategoryManager;
     private final LabManufacturerCategoryManager labManufacturerCategoryManager;
     private final KeycloakInfo keycloakInfo;
-    private final ExternalMetaDataManager externalMetaDataManager;
-    private static final RestTemplate restTemplate = new RestTemplate();
-    private final RestHelper restHelper;
+
 
     private EntityManager em;
     @Override
@@ -208,87 +201,6 @@ public class LabServiceImpl implements LabService {
         ResponseEntity<Map> response = restTemplate.postForEntity(url, entity , Map.class);
         Map<String, CategoryRoleResponseDto> result = (Map<String, CategoryRoleResponseDto>)response.getBody();
         return result;
-    }
-    private static final Map<String, Integer> categoryMap;
-    static {
-        categoryMap = new HashMap<>();
-        categoryMap.put("MILLER",1109);
-        categoryMap.put("FRK",1108);
-        categoryMap.put("PREMIX",1110);
-
-    }
-    public void validateNablCertificate(Long labId){
-        Lab lab = labManager.findById(labId);
-        Set<LabCategory> labCategoryIds =lab.getLabCategoryMapping();
-        ExternalMetaData fssaiLabList = externalMetaDataManager.findByKey("fssaiLabList");
-        String url = Constants.FORTIFICATION_BASE_URL +"category";
-        UriComponents builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("independentBatch", false)
-                .build();
-        ListResponse<CategoryResponseDto> response = restHelper
-                .fetchCategoryListResponse(builder.toUriString(), keycloakInfo.getAccessToken());
-        List<CategoryResponseDto> categoryResponseDtos = response.getData();
-        Map<Long, String> categoryIdMap = categoryResponseDtos.stream()
-                .collect(Collectors.toMap(CategoryResponseDto::getId, CategoryResponseDto::getName));
-        for (Map.Entry<String, Integer> entry :categoryMap.entrySet()) {
-            String categoryName = entry.getKey();
-            Long categoryId = categoryIdMap.entrySet().stream()
-                    .filter(e -> e.getValue().equals(categoryName))
-                    .map(Map.Entry::getKey)
-                    .findAny() // Just findAny() is sufficient, as there should be only one matching entry
-                    .get();
-
-            Integer defaultCategoryCode = entry.getValue();
-            List<FssaiCertificateResponseDTO> dtoList = ExternalRestHelper.validateFssaiCertificateNo(fssaiLabList.getValue() + defaultCategoryCode);
-            if(dtoList!=null){
-                Boolean certificate= false;
-                if(lab.getIsCertificateValid()!=null) {
-                     certificate = dtoList.stream()
-                            .anyMatch(dto -> lab.getCertificateNo().equals(dto.getCertificateNo())
-                                    && dto.getCertificateValidUpTo().after(new Date()));
-                }
-                if (labCategoryIds.stream().anyMatch(labCategory -> labCategory.getCategoryId().equals(categoryId) && labCategory.getIsEnabled()) && !certificate) {
-                    labCategoryIds.stream()
-                            .filter(labCategory -> labCategory.getCategoryId().equals(categoryId))
-                            .forEach(labCategory -> labCategory.setIsEnabled(false));
-                }
-                if(!labCategoryIds.stream().anyMatch(labCategory -> labCategory.getCategoryId().equals(categoryId)&& labCategory.getIsEnabled())  && certificate){
-                    //assgin role api
-                    String assignRoleUrl = Constants.IAM_BASE_URL+"/role/assign-lab-role";
-                    HttpEntity<?> httpEntity = new HttpEntity<>(new HttpHeaders() {{
-                        setBearerAuth(keycloakInfo.getAccessToken());
-                    }});
-                    UriComponents newbuilder = UriComponentsBuilder.fromHttpUrl(assignRoleUrl)
-                            .queryParam("labId", labId)
-                            .queryParam("roleCategory",categoryName)
-                            .queryParam("categoryId",categoryId)
-                            .build();
-                    try {
-                        ResponseEntity<Void> newApiResponse = restTemplate.exchange(newbuilder.toUriString(), HttpMethod.POST, httpEntity, Void.class);
-                    }catch (CustomException e){
-                        throw new CustomException("Error while assigning role", HttpStatus.BAD_REQUEST);
-                    }
-                    if(!labCategoryIds.stream().anyMatch(labCategory -> labCategory.getCategoryId().equals(categoryId))) {
-                        LabCategory newLabCategory = new LabCategory();
-                        newLabCategory.setId(categoryId);
-                        newLabCategory.setLab(lab);
-                        newLabCategory.setIsEnabled(true);
-                        labCategoryIds.add(newLabCategory);
-                        lab.setLabCategoryMapping(labCategoryIds);
-                        em.merge(lab);
-                    }
-                    else{
-                        labCategoryIds.stream()
-                                .filter(labCategory -> labCategory.getCategoryId().equals(categoryId))
-                                .forEach(labCategory -> labCategory.setIsEnabled(true));
-                    }
-
-                }
-            }
-            else{
-                continue;
-            }
-        }
     }
 
     @Override

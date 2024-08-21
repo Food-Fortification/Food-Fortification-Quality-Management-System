@@ -110,9 +110,6 @@ public class ImmudbServiceImpl implements ImmudbService{
     }
 
     public List<BatchEventEntity> getHistory(Long entityId, String type) {
-//        if(Objects.equals("batch",type.toLowerCase())) checkBatchAccess(entityId);
-//        else if(Objects.equals("lot",type.toLowerCase())) checkLotAccess(entityId);
-//        else throw new CustomException("Invalid type: " + type, HttpStatus.BAD_REQUEST);
         SQLQueryResult result;
         List<BatchEventEntity> list = new ArrayList<>();
         String tableName = "batch_event_entity";
@@ -140,7 +137,7 @@ public class ImmudbServiceImpl implements ImmudbService{
             }
             client.commitTransaction();
         } catch (Exception ex) {
-            log.error(" Exception in fetching the history of records" , ex);
+            log.error("Exception in fetching the history of records" , ex);
         } finally {
             client.closeSession();
         }

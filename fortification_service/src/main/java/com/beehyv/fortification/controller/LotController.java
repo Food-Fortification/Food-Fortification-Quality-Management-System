@@ -1,9 +1,6 @@
 package com.beehyv.fortification.controller;
 
-import com.beehyv.fortification.dto.external.TargetLotsExternalRequestDto;
-import com.beehyv.fortification.dto.requestDto.*;
-import com.beehyv.fortification.dto.responseDto.*;
-import com.beehyv.fortification.dto.external.TargetLotsExternalRequestDto;
+
 import com.beehyv.fortification.dto.requestDto.*;
 import com.beehyv.fortification.dto.responseDto.ListResponse;
 import com.beehyv.fortification.dto.responseDto.LotListResponseDTO;
@@ -11,15 +8,10 @@ import com.beehyv.fortification.dto.responseDto.LotResponseDto;
 import com.beehyv.fortification.dto.responseDto.StateResponseDto;
 import com.beehyv.fortification.enums.ActionType;
 import com.beehyv.fortification.enums.SampleTestResult;
-import com.beehyv.fortification.service.CategoryService;
 import com.beehyv.fortification.service.LotService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +26,6 @@ import java.util.List;
 public class LotController {
 
     private final LotService service;
-    private final CategoryService categoryService;
 
     @PostMapping
     public ResponseEntity<?> createLot(@Valid @RequestBody LotRequestDto dto, @PathVariable Long categoryId) {
@@ -159,21 +150,6 @@ public class LotController {
                                                            @PathVariable Long categoryId,
                                                            @RequestParam(required = false) Boolean externalDispatch) {
         return new ResponseEntity<>(service.createTargetLotFromSourceLots(dto, categoryId, externalDispatch), HttpStatus.CREATED);
-    }
-
-    @PostMapping("/target/external")
-    public ResponseEntity<?> createTargetLotsFromSourceLots(@Valid @RequestBody TargetLotsExternalRequestDto dto, @PathVariable Long categoryId) {
-        return new ResponseEntity<>(service.createTargetLotsFromSourceLots(dto, categoryId), HttpStatus.CREATED);
-    }
-
-    @GetMapping("/migrate")
-    public ResponseEntity<?> migrateNewMappingData(@PathVariable Long categoryId) {
-        service.migrateData();
-        return new ResponseEntity<>("Successfully Migrated Data", HttpStatus.OK);
-    }
-
-    private ResponseEntity<?> getSourceLotsByTargetLotId(Long id){
-        return new ResponseEntity<>(service.getSourceLotsByTargetLotId(id), HttpStatus.OK);
     }
 
     @GetMapping("/event/{lotId}")

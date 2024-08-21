@@ -42,8 +42,6 @@ import java.util.*;
 @AllArgsConstructor
 public class MessageManager {
     private final KafkaTemplate<String, String> template;
-    @Autowired
-    private KeycloakInfo keycloakInfo;
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -131,8 +129,7 @@ public class MessageManager {
             try {
                 String eventUpdateString = mapper.writeValueAsString(eventUpdate);
                 sendMessage(eventUpdateString, "event-update");
-            } catch (Exception e) {
-                //TODO: think to handle exception later
+            } catch (Exception ignored) {
             }
         } catch (Exception e) {
             log.error("Log Service Error: {{}}", e.getMessage(), e);

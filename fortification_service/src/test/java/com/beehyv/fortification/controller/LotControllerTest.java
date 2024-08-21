@@ -1,6 +1,5 @@
 package com.beehyv.fortification.controller;
 
-import com.beehyv.fortification.dto.external.TargetLotsExternalRequestDto;
 import com.beehyv.fortification.dto.requestDto.*;
 import com.beehyv.fortification.dto.responseDto.ListResponse;
 import com.beehyv.fortification.dto.responseDto.LotListResponseDTO;
@@ -170,25 +169,6 @@ public class LotControllerTest {
         ResponseEntity<?> response = lotController.createTargetLotFromSourceLots(dto, 1L, false);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(List.of(1L), response.getBody());
-    }
-
-    @Test
-    public void testCreateTargetLotsFromSourceLots() {
-        TargetLotsExternalRequestDto dto = new TargetLotsExternalRequestDto();
-        Map map = new HashMap<>();
-        map.put("a", "a");
-        when(lotService.createTargetLotsFromSourceLots(dto, 1L)).thenReturn(map);
-        ResponseEntity<?> response = lotController.createTargetLotsFromSourceLots(dto, 1L);
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(map, response.getBody());
-    }
-
-    @Test
-    public void testMigrateNewMappingData() {
-        doNothing().when(lotService).migrateData();
-        ResponseEntity<?> response = lotController.migrateNewMappingData(1L);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Successfully Migrated Data", response.getBody());
     }
 
 }

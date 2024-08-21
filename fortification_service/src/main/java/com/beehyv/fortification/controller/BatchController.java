@@ -2,14 +2,12 @@ package com.beehyv.fortification.controller;
 
 import com.beehyv.fortification.dto.requestDto.BatchRequestDto;
 import com.beehyv.fortification.dto.requestDto.EntityStateRequestDTO;
-import com.beehyv.fortification.dto.requestDto.PremixBatchByFrkDTO;
 import com.beehyv.fortification.dto.requestDto.SearchListRequest;
 import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.enums.ActionType;
 import com.beehyv.fortification.enums.EventTest;
 import com.beehyv.fortification.enums.SampleTestResult;
 import com.beehyv.fortification.service.BatchService;
-import com.beehyv.fortification.service.CategoryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +24,7 @@ import java.util.List;
 public class BatchController {
 
     private BatchService batchService;
-    private CategoryService categoryService;
+
 
     @PostMapping
     public ResponseEntity<?> createBatch(@PathVariable Long categoryId, @Valid @RequestBody BatchRequestDto batchRequestDto) {
@@ -66,11 +64,6 @@ public class BatchController {
                                                      @RequestParam(required = false) SampleTestResult sampleTestResult) {
         boolean isUpdated = batchService.updateBatchStatus(categoryId, entityStateRequestDTO, actionType, sampleTestResult);
         return new ResponseEntity<>(isUpdated, HttpStatus.OK);
-    }
-
-    @PostMapping("/{batchId}/state/dispatch")
-    public ResponseEntity<Boolean> dispatchExternalBatch(@RequestBody EntityStateRequestDTO entityStateRequestDTO, @PathVariable Long categoryId) {
-        return new ResponseEntity<>(batchService.dispatchExternalBatch(categoryId, entityStateRequestDTO), HttpStatus.OK);
     }
 
     @GetMapping("/{batchId}/actions/{actionType}")
@@ -118,10 +111,6 @@ public class BatchController {
         return new ResponseEntity<>("Successfully Updated Inspection Status", HttpStatus.OK);
     }
 
-//    @PostMapping("/create-external")
-//    public ResponseEntity<?> createExternalBatchAndLot(@RequestBody BatchExternalRequestDto dto){
-//        return new ResponseEntity<>(externalBatchService.createExternalBatchAndLot(dto), HttpStatus.CREATED);
-//    }
 
     @GetMapping("/batch-search")
     public ResponseEntity<?>getFilteredBatch(@RequestParam String search){

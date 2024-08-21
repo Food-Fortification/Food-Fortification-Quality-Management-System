@@ -1,9 +1,6 @@
 package com.beehyv.fortification.service.impl;
 
 
-import com.beehyv.fortification.dto.external.ExternalResponseDto;
-import com.beehyv.fortification.dto.external.SourceTargetLotExternalRequestDto;
-import com.beehyv.fortification.dto.external.TargetLotsExternalRequestDto;
 import com.beehyv.fortification.dto.iam.AddressResponseDto;
 import com.beehyv.fortification.dto.iam.CountryResponseDto;
 import com.beehyv.fortification.dto.iam.DistrictResponseDto;
@@ -13,7 +10,6 @@ import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.entity.*;
 import com.beehyv.fortification.enums.ActionType;
 import com.beehyv.fortification.enums.SampleTestResult;
-import com.beehyv.fortification.helper.ExternalRestHelper;
 import com.beehyv.fortification.helper.FunctionUtils;
 import com.beehyv.fortification.helper.IamServiceRestHelper;
 import com.beehyv.fortification.helper.LabServiceManagementHelper;
@@ -25,7 +21,6 @@ import com.beehyv.fortification.service.WastageService;
 import com.beehyv.parent.exceptions.CustomException;
 import com.beehyv.parent.fileUpload.service.StorageClient;
 import com.beehyv.parent.keycloakSecurity.KeycloakInfo;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
@@ -98,8 +93,6 @@ class LotServiceImplTest {
     private StorageClient storageClient;
     @Mock
     private WastageService wastageService;
-    @Mock
-    private ExternalRestHelper externalRestHelper;
     @Mock
     private SecurityContext securityContext;
     @Mock
@@ -540,41 +533,6 @@ class LotServiceImplTest {
 
     }
 
-    @Test
-    void testCreateTargetLotsFromSourceLots_AllowedToCreate() {
-        // Arrange
-        Long categoryId = 1L;
-
-        TargetLotsExternalRequestDto extdto = new TargetLotsExternalRequestDto();
-        extdto.setDateOfDispatch(new Date(System.currentTimeMillis() - 100000));
-        SourceTargetLotExternalRequestDto extLot = new SourceTargetLotExternalRequestDto();
-        extLot.setDestinationTransId("1");
-        extdto.setSourceTargetLots(Set.of(extLot));
-
-        entity.setRemainingQuantity(10.0);
-        entity.getCategory().setId(1L);
-        entity.getState().setName("approved");
-        entity.setDateOfAcceptance(new Date());
-        List<Long> lotIds = List.of(1L);
-        when(uomManager.findByName(any())).thenReturn(uom);
-        when(uomManager.findAllByIds(any())).thenReturn(Collections.singletonList(uom));
-        when(manager.findByLotNo(any())).thenReturn(Collections.singletonList(entity));
-        when(manager.findAllByIds(any())).thenReturn(Collections.singletonList(entity));
-        when(manager.findById(any())).thenReturn(entity);
-        when(manager.create(any())).thenReturn(entity);
-        when(stateManager.findByName(any())).thenReturn(new State(1L, null, null, null, "dispatched", null, null));
-        doReturn(lotIds).when(lotService).createTargetLotFromSourceLots(any(), any(), anyBoolean());
-        doReturn(true).when(lotService).receiveLot(any(), any(), any());
-        doReturn(true).when(lotService).acceptLot(any(), any(), any());
-
-        Task mockTask = mock(Task.class);
-
-        when(activitiManager.startLotProcess(any(), any(), any(), any())).thenReturn(mockTask);
-        // Act
-        Map<String, String> resultMap = lotService.createTargetLotsFromSourceLots(extdto, categoryId);
-        // Assert
-        assertNotNull(resultMap);
-    }
 
 
     @Test
@@ -643,50 +601,6 @@ class LotServiceImplTest {
         // Assert
         assertNotNull(result);
         assertFalse(result.isEmpty());
-    }
-
-    @Test
-    void testCallExternalPostAPi() throws JsonProcessingException {
-        // Arrange
-        String driverUid = "mock-driver-uid";
-        String commodityId = "mock-commodity-id";
-        String externalUrl = "mock-external-url";
-        entity.setTransportQuantityDetails(new TransportQuantityDetails(null, null, null, null, null, null, null, 10.0, Set.of(new TransportVehicleDetails())));
-        batch.setDateOfExpiry(new Date());
-        batch.setDateOfManufacture(new Date());
-        entity.setBatch(batch, entity);
-
-        mockUtils = mockStatic(FunctionUtils.class);
-
-
-        // Mock ExternalResponseDto
-        ExternalResponseDto mockExternalResponseDto = mock(ExternalResponseDto.class);
-        when(externalRestHelper.postApi(anyString(), anyString())).thenReturn(mockExternalResponseDto);
-
-        // Mock IamServiceRestHelper
-        String mockManufacturerId = "mock-manufacturer-id";
-        String mockTargetManufacturerId = "mock-target-manufacturer-id";
-        when(IamServiceRestHelper.fetchResponse(anyString(), eq(String.class), anyString())).thenReturn(mockManufacturerId, mockTargetManufacturerId);
-        Map map = new HashMap<>(Map.of("1", new HashMap<>(Map.of("address", "{\"district\":{\"id\":\"1\",\"name\":null}}"))));
-        when(IamServiceRestHelper.getNameAndAddress(any(), any())).thenReturn(map);
-
-
-        // Mock FunctionUtils
-        List<DistrictJsonDto> mockDistrictIdList = new ArrayList<>();
-        mockDistrictIdList.add(new DistrictJsonDto("1", "1"));
-        when(FunctionUtils.getDistrictIdList()).thenReturn(mockDistrictIdList);
-
-        // Act
-        ExternalResponseDto result = null;
-        try {
-            result = lotService.callExternalPostAPi(entity, "driver", "Cid", "a.com");
-            // Code to handle successful execution
-        } catch (Exception e) {
-            // Code to handle exception
-        }
-        assertNotNull(result);
-        // Assert
-        verify(externalRestHelper, times(1)).postApi(any(), any());
     }
 
     @Test
@@ -845,23 +759,6 @@ class LotServiceImplTest {
         // Act
         lotService.updateBatchInspectionStatus(lotId, isBlocked);
         when(manager.update(entity)).thenReturn(entity);
-
-        // Assert
-        verify(manager, times(1)).update(any());
-    }
-
-    @Test
-    public void testMigrateData() {
-        Long[] longarray = new Long[2];
-        longarray[0] = 1L;
-        longarray[1] = 2L;
-        List<Long[]> results = new ArrayList<>();
-        results.add(longarray);
-        when(manager.migrateData()).thenReturn(results);
-        when(manager.findById(any())).thenReturn(entity);
-        when(batchManager.findById(any())).thenReturn(batch);
-        // Act
-        lotService.migrateData();
 
         // Assert
         verify(manager, times(1)).update(any());

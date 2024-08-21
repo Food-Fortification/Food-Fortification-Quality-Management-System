@@ -23,12 +23,10 @@ public class IamSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         super.configure(http);
         http.authorizeRequests()
                 .antMatchers("/login").permitAll()
-                .antMatchers("/external-login").permitAll()
                 .antMatchers("/refreshToken").permitAll()
                 .antMatchers("/user").permitAll()
                 .antMatchers("/user/*").permitAll()
                 .antMatchers("/actuator/health").permitAll()
-                .antMatchers("/manufacturer/external").permitAll()
                 .antMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
                 .anyRequest()
                 .authenticated();

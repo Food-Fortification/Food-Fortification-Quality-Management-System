@@ -1,6 +1,5 @@
 package com.beehyv.fortification.service.impl;
 
-import com.beehyv.fortification.dto.iam.AddressResponseDto;
 import com.beehyv.fortification.dao.EventBodyDao;
 import com.beehyv.fortification.dto.requestDto.*;
 import com.beehyv.fortification.dto.responseDto.*;
@@ -41,15 +40,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.persistence.NoResultException;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.validation.ValidationException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -113,11 +107,8 @@ public class BatchServiceImpl implements BatchService {
     @Autowired
     private EventBodyDao eventBodyDao;
 
-    private final BatchStateGeoManager batchStateGeoManager;
 
-    private final String[] lotDetailsColumnNames = {"SL. NO", "Name", "Manufacturer Lot Number", "Manufacturing Date", "Dispatch Date", "Expiry Date", "Manufacturer", "License Number", "Quantity Used", "Stage"};
     private final String[] inventoryDetailsColumnNames = {"SL. NO", "Batch Number", "Manufacturing Date", "Expiry Date", "Total Quantity(KG)", "Remaining Quantity(KG)", "Stage"};
-    private final LotStateGeoManager lotStateGeoManager;
 
     @Override
     public Long createBatch(BatchRequestDto batchRequestDto) {
@@ -459,13 +450,6 @@ public class BatchServiceImpl implements BatchService {
     }
 
     @Override
-    public boolean dispatchExternalBatch(Long categoryId, EntityStateRequestDTO entityStateRequestDTO) {
-        State state = stateManager.findByName("batchToDispatch");
-        entityStateRequestDTO.setStateId(state.getId());
-        return updateBatchStatus(categoryId, entityStateRequestDTO, ActionType.module, null);
-    }
-
-    @Override
     public boolean updateBatchStatus(Long categoryId, EntityStateRequestDTO entityStateRequestDTO, ActionType actionType, SampleTestResult sampleTestResult) {
         if (entityStateRequestDTO.getDateOfAction().after(new Date())) {
             throw new ValidationException(" Date of Action cannot be Future Date");
@@ -628,11 +612,6 @@ public class BatchServiceImpl implements BatchService {
         );
     }
 
-    private boolean isSuperAdmin() {
-        Set<String> userRoles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
-        return userRoles.stream().anyMatch(r -> r.contains("SUPERADMIN"));
-    }
-
     private List<String> roleCategoryNames() {
         Set<String> roles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
         List<String[]> roleSplitList = roles.stream().map(r -> r.split("_")).filter(rc -> rc.length == 3).toList();
@@ -748,64 +727,6 @@ public class BatchServiceImpl implements BatchService {
         Batch batch = batchManager.findById(batchId);
         batch.setIsBlocked(isBlocked);
         batchManager.update(batch);
-    }
-
-    @Override
-    public Resource getBatchInventoryExcel(ListResponse<BatchListResponseDTO> batches) {
-        try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("Lot Usage Details");
-            Row headerRow = sheet.createRow(0);
-
-            CellStyle headerCellStyle = workbook.createCellStyle();
-            Font headerFont = workbook.createFont();
-            headerFont.setBold(true);
-            headerCellStyle.setFont(headerFont);
-            headerCellStyle.setAlignment(HorizontalAlignment.LEFT);
-
-            // Write field names as the first row
-            for (int i = 0; i < inventoryDetailsColumnNames.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(inventoryDetailsColumnNames[i]);
-                cell.setCellStyle(headerCellStyle);
-            }
-
-            CellStyle districtDataCellStyle = workbook.createCellStyle();
-            districtDataCellStyle.setAlignment(HorizontalAlignment.LEFT);
-
-            List<BatchListResponseDTO> batchInventory = batches.getData();
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
-            // Write DashboardResponseDto objects to Excel
-            for (int rowIndex = 0; rowIndex < batchInventory.size(); rowIndex++) {
-                Row dataRow = sheet.createRow(rowIndex + 1); // Start from row 1 (row 0 is for header)
-                BatchListResponseDTO dto = batchInventory.get(rowIndex);
-
-                // Set cell values from the DashboardResponseDto
-                dataRow.createCell(0).setCellValue(rowIndex + 1);
-                dataRow.createCell(1).setCellValue(dto.getBatchNo());
-                dataRow.createCell(2).setCellValue(sdf.format(dto.getDateOfManufacture()));
-                dataRow.createCell(3).setCellValue(sdf.format(dto.getDateOfExpiry()));
-                dataRow.createCell(4).setCellValue(dto.getTotalQuantity());
-                dataRow.createCell(5).setCellValue(dto.getRemainingQuantity());
-                dataRow.createCell(6).setCellValue(dto.getState());
-
-                for (int k = 0; k < inventoryDetailsColumnNames.length; k++)
-                    dataRow.getCell(k).setCellStyle(districtDataCellStyle);
-            }
-
-            // Auto-size columns to fit content
-            for (int i = 0; i < inventoryDetailsColumnNames.length; i++) {
-                sheet.autoSizeColumn(i);
-            }
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            workbook.write(outputStream);
-            InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            return new InputStreamResource(inputStream);
-
-        } catch (Exception e) {
-            log.info(e.getMessage());
-        }
-        return null;
     }
 
     @Override

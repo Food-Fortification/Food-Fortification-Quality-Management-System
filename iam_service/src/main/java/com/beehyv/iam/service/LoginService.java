@@ -1,19 +1,8 @@
 package com.beehyv.iam.service;
 
 import com.beehyv.iam.config.KeycloakCustomConfig;
-import com.beehyv.iam.dto.external.FssaiLicenseResponseDto;
 import com.beehyv.iam.dto.requestDto.LoginRequestDto;
-import com.beehyv.iam.dto.requestDto.ManufacturerCategoryRequestDto;
-import com.beehyv.iam.dto.requestDto.RoleRequestDto;
-import com.beehyv.iam.dto.responseDto.CategoryResponseDto;
-import com.beehyv.iam.dto.responseDto.ListResponse;
-import com.beehyv.iam.helper.ExternalRestHelper;
-import com.beehyv.iam.helper.FortificationRestHelper;
 import com.beehyv.iam.manager.ExternalMetaDataManager;
-import com.beehyv.iam.manager.ManufacturerManager;
-import com.beehyv.iam.manager.UserManager;
-import com.beehyv.iam.manager.UserRoleCategoryManager;
-import com.beehyv.iam.model.*;
 import com.beehyv.parent.exceptions.CustomException;
 import com.beehyv.parent.keycloakSecurity.KeycloakInfo;
 import lombok.RequiredArgsConstructor;
@@ -28,15 +17,9 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-import com.beehyv.iam.enums.UserCategory;
-import org.springframework.web.client.RestTemplate;
 
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -47,21 +30,12 @@ public class LoginService {
 
     private final KeycloakCustomConfig keycloakCustomConfig;
     private final ExternalMetaDataManager externalMetaDataManager;
-    private final UserManager userManager;
-    private final ManufacturerCategoryService manufacturerCategoryService;
-    private final UserRoleCategoryManager userRoleCategoryManager;
-    private final RoleService roleService;
+
 
     @Value("${config.realm.resource}")
     private String realmResource;
     private final KeycloakInfo keycloakInfo;
-    private final ManufacturerManager manufacturerManager;
-    @Value("${service.fortification.baseUrl}")
-    private String fortificationBaseUrl;
 
-    @Value("${service.lab.baseUrl}")
-    private String labBaseUrl;
-    private static final RestTemplate restTemplate = new RestTemplate();
 
     public AccessTokenResponse login(LoginRequestDto loginRequestDto, String mobileVersion){
         String curMobileVersion = externalMetaDataManager.findByKey("apkVersion").getValue();

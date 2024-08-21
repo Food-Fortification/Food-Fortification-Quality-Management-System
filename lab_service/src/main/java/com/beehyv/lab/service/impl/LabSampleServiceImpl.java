@@ -9,7 +9,6 @@ import com.beehyv.lab.enums.LabSampleActionType;
 import com.beehyv.lab.enums.LabSampleResult;
 import com.beehyv.lab.enums.SampleType;
 import com.beehyv.lab.helper.Constants;
-import com.beehyv.lab.helper.ExternalRestHelper;
 import com.beehyv.lab.helper.RestHelper;
 import com.beehyv.lab.helper.ServiceUtils;
 import com.beehyv.lab.manager.*;
@@ -18,10 +17,7 @@ import com.beehyv.lab.service.LabSampleService;
 import com.beehyv.lab.service.LabService;
 import com.beehyv.parent.exceptions.CustomException;
 import com.beehyv.parent.keycloakSecurity.KeycloakInfo;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.mapstruct.factory.Mappers;
 import org.slf4j.Logger;
@@ -49,8 +45,7 @@ public class LabSampleServiceImpl implements LabSampleService {
     private final SampleStateManager sampleStateManager;
     private final MessageManager messageManager;
     private final LabTestReferenceMethodManager labTestReferenceMethodManager;
-    private final ExternalRestHelper externalRestHelper;
-    private final ExternalMetaDataManager externalMetaDataManager;
+
 
     private static final Map<String,String> actionMap;
      static {
@@ -179,8 +174,14 @@ public class LabSampleServiceImpl implements LabSampleService {
         }
 
         LabSample labSample =  labSampleManager.create(entity);
-        messageManager.send(labSample.getManufacturerId(), labSample.getCategoryId(), labSample.getLab().getId()
-        , LabSampleActionType.create, sampleState, keycloakInfo.getAccessToken(), getYearFromDate(labSample.getSampleSentDate()));
+        messageManager.send(labSample.getManufacturerId(),
+                labSample.getCategoryId(),
+                labSample.getLab().getId(),
+                LabSampleActionType.create,
+                sampleState,
+                keycloakInfo.getAccessToken(),
+                getYearFromDate(labSample.getSampleSentDate())
+        );
         return new LabSampleCreateResponseDto(labSample.getId(),labSample.getLab().getId(), null);
     }
 
@@ -217,13 +218,7 @@ public class LabSampleServiceImpl implements LabSampleService {
         LabSampleResult labSampleResult =  findLabTestResult(labSampleRequestDTO.getLabTests(), entity.getPercentageCategoryMix());
         entity = mapper.mapDtoToEntityLabSample(labSampleRequestDTO, previousLabSample);
         labSampleManager.update(entity);
-        if(entity.getInspection()!=null && entity.getInspection().getIsExternalTest()){
-            ExternalMetaData externalMetaData = externalMetaDataManager.findByKeyAndService("labResult","TCS");
-            if(externalMetaData != null){
-                externalRestHelper.postApi(externalMetaData.getValue(), writeData(entity.getLotNo(),labSampleResult, entity.getSampleTestDocuments()));
 
-            }
-        }
         Boolean isExternalTest = previousLabSample.getInspection() != null && previousLabSample.getInspection().getIsExternalTest();
         Long labId = isExternalTest ? previousLabSample.getLab().getId() : null;
         return LabSampleResultResponseDto.builder()
@@ -231,24 +226,6 @@ public class LabSampleServiceImpl implements LabSampleService {
                 .isExternalTest(isExternalTest)
                 .labId(labId)
                 .build();
-    }
-
-    public String writeData(String lotNo, LabSampleResult labSampleResult, Set<SampleTestDocument> sampleTestDocuments) {
-        Map jsonData = new HashMap();
-        jsonData.put("lotNo", lotNo);
-        jsonData.put("result", labSampleResult);
-
-        String labFileStorage = "lab-files"; //TODO: in case of folder change in parent change it here
-        String url = Constants.IAM_BASE_URL + "storage/get-file?key=%s&type=" + labFileStorage;
-        List<String> reportUrls = sampleTestDocuments.stream().map(std -> String.format(url,std.getPath()) ).toList();
-        jsonData.put("reportUrl", reportUrls);
-
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.writeValueAsString(jsonData);
-        } catch (JsonProcessingException e) {
-            return "";
-        }
     }
 
     private LabSampleResult findLabTestResult(Set<LabTestRequestDTO> labTests, Double percentageCategoryMix){

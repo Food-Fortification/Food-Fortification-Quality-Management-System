@@ -1,7 +1,5 @@
 package com.beehyv.fortification.service.impl;
 
-import com.beehyv.fortification.dto.external.ExternalResponseDto;
-import com.beehyv.fortification.dto.external.TargetLotsExternalRequestDto;
 import com.beehyv.fortification.dto.iam.AddressResponseDto;
 import com.beehyv.fortification.dto.requestDto.*;
 import com.beehyv.fortification.dto.responseDto.*;
@@ -18,8 +16,6 @@ import com.beehyv.fortification.service.WastageService;
 import com.beehyv.parent.exceptions.CustomException;
 import com.beehyv.parent.fileUpload.service.StorageClient;
 import com.beehyv.parent.keycloakSecurity.KeycloakInfo;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.TaskService;
@@ -32,7 +28,6 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.ValidationException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,10 +40,8 @@ public class LotServiceImpl implements LotService {
     private final BaseMapper<LotResponseDto, LotRequestDto, Lot> mapper = BaseMapper.getForClass(LotMapper.class);
     private final BaseMapper<StateResponseDto, StateRequestDto, State> stateMapper = BaseMapper.getForClass(StateMapper.class);
     private final BaseMapper<LotListResponseDTO, LotRequestDto, Lot> lotListMapper = BaseMapper.getForListClass(LotMapper.class);
-    private final BaseMapper<CategoryResponseDto, CategoryRequestDto, Category> categoryMapper = BaseMapper.getForClass(CategoryMapper.class);
     private final BaseMapper<SizeUnitResponseDto, SizeUnitRequestDto, SizeUnit> sizeUnitMapper = BaseMapper.getForClass(SizeUnitMapper.class);
     private LotManager manager;
-    private BatchLotMappingManager batchLotMappingManager;
     @Autowired
     private KeycloakInfo keycloakInfo;
     @Autowired
@@ -77,8 +70,6 @@ public class LotServiceImpl implements LotService {
     private StorageClient storageClient;
     @Autowired
     private WastageService wastageService;
-    @Autowired
-    private ExternalRestHelper externalRestHelper;
 
     public static final Map<String, String> stateMap;
 
@@ -183,23 +174,6 @@ public class LotServiceImpl implements LotService {
                 if (entity.getTotalQuantity() > dispatchableQuantity) {
                     throw new CustomException("Lot quantity exceeds max dispatchable quantity by " + (entity.getTotalQuantity() - dispatchableQuantity) + "kg", HttpStatus.BAD_REQUEST);
                 }
-
-                if ((externalMetaData.getBlocking())) {
-                    try {
-                        ExternalResponseDto response = callExternalPostAPi(entity, driverUid, dto.getCommodityId(), externalMetaData.getValue());
-                        if (!Objects.equals(response.getStatusCode(), "200")) {
-                            throw new CustomException(response.getMessage(), HttpStatus.BAD_REQUEST);
-                        }
-                    } catch (JsonProcessingException e) {
-                        throw new CustomException("Oops! Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
-                } else {
-                    try {
-                        ExternalResponseDto response = callExternalPostAPi(entity, driverUid, dto.getCommodityId(), externalMetaData.getValue());
-                    } catch (Exception e) {
-                        log.error("Error occurred while calling external post api: " + e.getMessage());
-                    }
-                }
             }
 
             Lot savedLot = manager.create(entity);
@@ -277,92 +251,6 @@ public class LotServiceImpl implements LotService {
         } else {
             throw new ValidationException("Batch is not approved");
         }
-    }
-
-
-    public ExternalResponseDto callExternalPostAPi(Lot lot, String driverUid, String commodityId, String externalUrl) throws JsonProcessingException {
-        TransportVehicleDetails transportVehicleDetails = lot.getTransportQuantityDetails().getTransportVehicleDetailsSet().stream().toList().get(0);
-        TransportQuantityDetails transportQuantityDetails = lot.getTransportQuantityDetails();
-
-        Map jsonData = new HashMap();
-        jsonData.put("lotId", lot.getLotNo());
-        jsonData.put("movementOrderId", transportQuantityDetails.getPurchaseOrderId());
-        jsonData.put("mo_dest_transaction_id", transportVehicleDetails.getChildPurchaseId());
-        jsonData.put("vehicleNo", transportVehicleDetails.getVehicleNo());
-        jsonData.put("driverName", transportVehicleDetails.getDriverName());
-        jsonData.put("driverLicense", transportVehicleDetails.getDriverLicense());
-        jsonData.put("driverContactNo", transportVehicleDetails.getDriverContactNo());
-        jsonData.put("driverUid", driverUid);
-        jsonData.put("totBags", transportVehicleDetails.getTotalBags());
-        jsonData.put("totTruckQuantity", transportVehicleDetails.getTotalTruckQuantity());
-        jsonData.put("noOfBags", transportQuantityDetails.getTotalNoOfBags());
-        jsonData.put("dispatchedQuantity", lot.getTotalQuantity());
-        jsonData.put("grossWeight", transportQuantityDetails.getGrossWeight());
-        jsonData.put("tareWeight", transportQuantityDetails.getTareWeight());
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-        jsonData.put("truckGenDate", formatter.format(new Date()));
-        jsonData.put("netWeight", transportQuantityDetails.getNetWeight());
-        jsonData.put("manufacturingDate", formatter.format(lot.getBatch().getDateOfManufacture()));
-        jsonData.put("expiryDate", formatter.format(lot.getBatch().getDateOfExpiry()));
-        jsonData.put("commodityId", commodityId);
-
-
-        String url = Constants.IAM_SERVICE_URL + "manufacturer/manufacturerId/";
-        String externalManufacturerId = IamServiceRestHelper.fetchResponse(url + lot.getManufacturerId(), String.class, keycloakInfo.getAccessToken());
-        String externalTargetManufacturerId = IamServiceRestHelper.fetchResponse(url + lot.getTargetManufacturerId(), String.class, keycloakInfo.getAccessToken());
-        jsonData.put("Supplier_id", externalManufacturerId);
-        jsonData.put("destinationId", externalTargetManufacturerId);
-
-        Map<String, Map<String, String>> map = IamServiceRestHelper.getNameAndAddress(Collections.singletonList(lot.getTargetManufacturerId()), keycloakInfo.getAccessToken());
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, String> nameAddressMap = map.get(lot.getTargetManufacturerId().toString());
-            AddressLocationResponseDto addressDto = objectMapper.readValue(nameAddressMap.get("address"), AddressLocationResponseDto.class);
-            List<DistrictJsonDto> districtIdList = FunctionUtils.getDistrictIdList();
-            Optional<String> externalDistrictId = districtIdList.stream().filter(d -> d.getDistrictId().equals(addressDto.getDistrict().getId().toString())).map(DistrictJsonDto::getExternalDistrictId).findFirst();
-            jsonData.put("districtId", externalDistrictId.get());
-        } catch (Exception e) {
-            log.info(e.getMessage());
-        }
-
-
-        ObjectMapper mapper = new ObjectMapper();
-        String request = mapper.writeValueAsString(jsonData);
-
-        return externalRestHelper.postApi(externalUrl, request);
-    }
-
-    @Override
-    public Map<String, String> createTargetLotsFromSourceLots(TargetLotsExternalRequestDto dto, Long categoryId) {
-        log.info("Request received for creating external target lot: {}", dto);
-        Map<String, String> responseMap = new HashMap<>();
-        Date dateOfDispatch = dto.getDateOfDispatch();
-        Date dateOfAction = dto.getDateOfAcceptance();
-        String comments = dto.getComments();
-
-        dto.getSourceTargetLots().forEach(l -> {
-            TargetLotRequestDto targetLotRequestDto = new TargetLotRequestDto();
-            targetLotRequestDto.setComments(comments);
-            targetLotRequestDto.setDateOfDispatch(dateOfDispatch);
-            targetLotRequestDto.setExternalTargetManufacturerId(l.getExternalTargetManufacturerId());
-            targetLotRequestDto.setMixes(l.getMixes());
-            List<Long> lotIds = createTargetLotFromSourceLots(targetLotRequestDto, categoryId, false);
-            responseMap.put(l.getDestinationTransId(), manager.findById(lotIds.get(0)).getLotNo());
-
-            LotReceiveRequestDto lotReceiveRequestDto = new LotReceiveRequestDto();
-            lotReceiveRequestDto.setComments(comments);
-            lotReceiveRequestDto.setDateOfAction(dateOfAction);
-            lotReceiveRequestDto.setAcknowledgedQuantity(l.getAcknowledgedQuantity());
-
-            if (!receiveLot(lotReceiveRequestDto, categoryId, lotIds)) {
-                throw new CustomException("Error in acknowledging dispatched lot", HttpStatus.BAD_REQUEST);
-            }
-            if (!acceptLot(lotReceiveRequestDto, categoryId, lotIds)) {
-                throw new CustomException("Error in accepting acknowledged lot", HttpStatus.BAD_REQUEST);
-            }
-        });
-        log.info("Returning response: {}", responseMap);
-        return responseMap;
     }
 
     @Override
@@ -448,7 +336,6 @@ public class LotServiceImpl implements LotService {
             if (externalDispatch != null && externalDispatch) {
                 lot.setState(stateManager.findByName("dispatched"));
             } else {
-                // TODO use category id of target
                 LabConfigCategory labConfigCategory =
                         labConfigCategoryManager.findByCategoryIds(categoryId, dto.getTargetManufacturerId());
                 String labOption = "";
@@ -1050,28 +937,6 @@ public class LotServiceImpl implements LotService {
         Lot lot = manager.findById(lotId);
         lot.setIsBlocked(isBlocked);
         manager.update(lot);
-    }
-
-    @Override
-    public void migrateData() {
-        List<Long[]> results = manager.migrateData();
-        log.info("Count of existing lots : {}", results.size());
-        List<BatchLotMapping> existingMappings = batchLotMappingManager.findAll(null, null);
-        List<BatchLotMapping> newMappings = new ArrayList<>();
-        results.forEach(l -> {
-            boolean existingMappingMatch = existingMappings.stream().filter(bl -> bl.getSourceLot() != null && bl.getBatch() != null)
-                    .anyMatch(b -> b.getBatch().getId().equals(l[1]) && b.getSourceLot().getId().equals(l[0]));
-            if (!existingMappingMatch) {
-                newMappings.add(new BatchLotMapping(new Batch(l[1]), new Lot(l[0])));
-            }
-            Lot existingLot = manager.findById(l[0]);
-            Batch existingBatch = batchManager.findById(l[1]);
-            existingLot.setCategory(existingBatch.getCategory());
-            existingLot.setManufacturerId(existingBatch.getManufacturerId());
-            manager.update(existingLot);
-        });
-        log.info("Size of new entries to be inserted into database: {}", newMappings.size());
-        newMappings.forEach(b -> batchLotMappingManager.create(b));
     }
 
     @Override

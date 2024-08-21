@@ -1,7 +1,6 @@
 package com.beehyv.fortification.service.impl;
 
 import com.beehyv.fortification.dto.requestDto.WastageRequestDto;
-import com.beehyv.fortification.dto.external.ExternalLotDetailsResponseDto;
 import com.beehyv.fortification.dto.responseDto.ListResponse;
 import com.beehyv.fortification.dto.responseDto.WastageResponseDto;
 import com.beehyv.fortification.entity.Batch;
@@ -24,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.ValidationException;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,25 +67,6 @@ public class WastageServiceImpl implements WastageService {
         lot.setRemainingQuantity(remainingBatchQuantity/lot.getUom().getConversionFactorKg());
         lotManager.update(lot);
         return entity.getId();
-    }
-
-    @Override
-    public ExternalLotDetailsResponseDto createExternalLotWastage(WastageRequestDto dto, String lotNo){
-        List<Lot> lotList = lotManager.findByLotNo(lotNo);
-        Optional<Lot> optionalLot = lotList.stream().filter(l -> l.getTargetBatchMapping().isEmpty()).findFirst();
-
-        if(optionalLot.isEmpty()){
-            throw new CustomException("Lot not found for lotNo: " + lotNo, HttpStatus.BAD_REQUEST);
-        }
-        Lot lot = optionalLot.get();
-        dto.setLotId(lot.getId());
-        dto.setUomId(uomManager.findByName("Kg").getId());
-        createLotWastage(dto, lot.getId());
-        ExternalLotDetailsResponseDto lotDto = new ExternalLotDetailsResponseDto();
-        lotDto.setCategoryId(lot.getCategory().getId());
-        lotDto.setManufacturerId(lot.getManufacturerId());
-        lotDto.setLotId(lot.getId());
-        return lotDto;
     }
 
     @Override

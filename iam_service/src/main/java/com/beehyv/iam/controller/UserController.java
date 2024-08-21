@@ -86,13 +86,4 @@ public class UserController {
         return ResponseEntity.ok(service.getNotificationLastSeenTime());
     }
 
-    @PostMapping("/checkUser")
-    public ResponseEntity<?> checkUser(@RequestParam String licenseNo) {
-        return ResponseEntity.ok(service.checkUser(licenseNo));
-    }
-
-    @PostMapping("/encoded-password")
-    public ResponseEntity<?> generatePassword(@RequestParam String licenseNo) {
-        return ResponseEntity.ok(service.generateEncodedPassword(licenseNo));
-    }
 }

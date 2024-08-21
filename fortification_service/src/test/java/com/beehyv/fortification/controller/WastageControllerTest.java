@@ -1,6 +1,5 @@
 package com.beehyv.fortification.controller;
 
-import com.beehyv.fortification.dto.external.ExternalLotDetailsResponseDto;
 import com.beehyv.fortification.dto.requestDto.WastageRequestDto;
 import com.beehyv.fortification.dto.responseDto.ListResponse;
 import com.beehyv.fortification.dto.responseDto.WastageResponseDto;
@@ -36,15 +35,6 @@ public class WastageControllerTest {
         WastageRequestDto dto = new WastageRequestDto();
         when(wastageService.createLotWastage(dto, 1L)).thenReturn(1L);
         ResponseEntity<Long> response = wastageController.createWastage(1L, 1L, WastageType.lot, dto);
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-    }
-
-    @Test
-    public void testCreateExternalWastage() {
-        WastageRequestDto dto = new WastageRequestDto();
-        ExternalLotDetailsResponseDto result = new ExternalLotDetailsResponseDto();
-        when(wastageService.createExternalLotWastage(dto, "entityNo")).thenReturn(result);
-        ResponseEntity<?> response = wastageController.createExternalWastage(1L, "entityNo", WastageType.lot, dto);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 

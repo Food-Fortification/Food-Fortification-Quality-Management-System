@@ -1,6 +1,5 @@
 package com.beehyv.fortification.service.impl;
 
-import com.beehyv.fortification.dto.external.ExternalLotDetailsResponseDto;
 import com.beehyv.fortification.dto.requestDto.WastageRequestDto;
 import com.beehyv.fortification.dto.responseDto.ListResponse;
 import com.beehyv.fortification.dto.responseDto.WastageResponseDto;
@@ -180,38 +179,6 @@ public class WastageServiceImplTest {
 
         Assertions.assertThrows(CustomException.class, () -> {
             wastageService.createLotWastage(dto, lot.getId());
-        });
-    }
-
-    @Test
-    void createExternalLotWastage_ValidRequest_ShouldCreateWastage() {
-        String lotNo = "LOT001";
-        List<Lot> lotList = new ArrayList<>();
-        lot.setCategory(new Category());
-        lot.getCategory().setId(1L);
-        lotList.add(lot);
-
-        when(lotManager.findByLotNo(lotNo)).thenReturn(lotList);
-        when(uomManager.findByName("Kg")).thenReturn(uom);
-        when(manager.create(any(Wastage.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        ExternalLotDetailsResponseDto response = wastageService.createExternalLotWastage(dto, lotNo);
-
-        Assertions.assertNotNull(response);
-        Assertions.assertEquals(lot.getCategory().getId(), response.getCategoryId());
-        Assertions.assertEquals(lot.getManufacturerId(), response.getManufacturerId());
-        Assertions.assertEquals(lot.getId(), response.getLotId());
-        verify(lotManager, times(1)).update(lot);
-    }
-
-    @Test
-    void createExternalLotWastage_LotNotFound_ShouldThrowCustomException() {
-        String lotNo = "LOT001";
-
-        when(lotManager.findByLotNo(lotNo)).thenReturn(new ArrayList<>());
-
-        Assertions.assertThrows(CustomException.class, () -> {
-            wastageService.createExternalLotWastage(dto, lotNo);
         });
     }
 

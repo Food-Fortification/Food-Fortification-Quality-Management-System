@@ -1,8 +1,6 @@
 package com.beehyv.iam.service;
 
 import com.beehyv.iam.config.KeycloakCustomConfig;
-import com.beehyv.iam.dto.external.FssaiRequestDto;
-import com.beehyv.iam.dto.external.FssaiResponseDto;
 import com.beehyv.iam.dto.requestDto.LoginRequestDto;
 import com.beehyv.iam.dto.requestDto.SearchListRequest;
 import com.beehyv.iam.dto.requestDto.UserRequestDto;
@@ -11,7 +9,6 @@ import com.beehyv.iam.dto.responseDto.*;
 import com.beehyv.iam.enums.RoleCategoryType;
 import com.beehyv.iam.enums.UserType;
 import com.beehyv.iam.exception.KeycloakException;
-import com.beehyv.iam.helper.ExternalRestHelper;
 import com.beehyv.iam.helper.FortificationRestHelper;
 import com.beehyv.iam.helper.LabRestHelper;
 import com.beehyv.iam.manager.*;
@@ -29,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
-import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.mapstruct.factory.Mappers;
@@ -44,7 +40,6 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.core.Response;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,7 +49,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserService {
     private final KeycloakCustomConfig keycloakCustomConfig;
-    private final ExternalMetaDataManager externalMetaDataManager;
     private final BaseMapper<UserResponseDto, UserRequestDto, User> mapper = BaseMapper.getForClass(UserMapper.class);
     private final BaseMapper<UserRoleCategoryResponseDto, UserRoleCategoryRequestDto, UserRoleCategory> userRoleCategoryMapper = BaseMapper.getForClass(UserRoleCategoryMapper.class);
     private final UserManager userManager;
@@ -68,7 +62,6 @@ public class UserService {
     private final ManufacturerCategoryService manufacturerCategoryService;
     private final UserRoleCategoryManager userRoleCategoryManager;
     private final StatusManager statusManager;
-    private final LoginService loginService;
 
     @Value(("${service.superadmin.username}"))
     private String superadminUsername;
@@ -415,58 +408,4 @@ public class UserService {
         dto.setNotificationLastSeenTime(loggedInuser.getNotificationLastSeenTime());
         return dto;
     }
-
-    public FssaiResponseDto fssaiRedirectUrl(String apiAccessKey, FssaiRequestDto dto){
-        log.info("Fssai Redirect Url request Dto: {}", dto);
-        ExternalMetaData redirectApi = externalMetaDataManager.findByKey("redirectApi");
-        ExternalRestHelper.callFssaiPostApi(redirectApi.getValue(), apiAccessKey, dto.getRequestID());
-        ExternalMetaData uiUrl = externalMetaDataManager.findByKey("uiUrl");
-        String frontendUrl = uiUrl.getValue();
-//        ExternalMetaData fssaiUser = externalMetaDataManager.findByKey(dto.getUserDetails().getLicense_no());
-//        LoginRequestDto loginRequestDto;
-//        if (fssaiUser != null){
-//            loginRequestDto = new LoginRequestDto(dto.getUserDetails().getLicense_no(), fssaiUser.getValue(), null);
-//        }else {
-//            throw new CustomException("Invalid credentials, Please contact administrator", HttpStatus.BAD_REQUEST);
-//        }
-        String password = generatePassword(manufacturerManager.findByLicenseNo(dto.getUserDetails().getLicense_no()));
-        LoginRequestDto loginRequestDto = new LoginRequestDto(dto.getUserDetails().getLicense_no(), password, null);
-        AccessTokenResponse tokenResponse = loginService.login(loginRequestDto, externalMetaDataManager.findByKey("apkVersion").getValue());
-        String token = tokenResponse.getToken();
-        String redirectUrl = frontendUrl+"/auth/redirect?token="+token;
-        return new FssaiResponseDto("200", redirectUrl);
-    }
-    
-    public String generatePassword(Manufacturer manufacturer){
-        String pass = "Eo@";
-        String licenseNo = manufacturer.getLicenseNumber();
-        LocalDateTime createdDate = manufacturer.getCreatedDate();
-        long epochSecond = createdDate.atZone(ZoneId.systemDefault()).toEpochSecond();
-        pass += String.valueOf(epochSecond + Long.parseLong(licenseNo));
-        return pass;
-    }
-
-    public String generateEncodedPassword(String licenseNo){
-        Set<String> userRoles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
-        if (userRoles != null && userRoles.stream().anyMatch(r -> r.contains("SUPERADMIN"))) {
-            Manufacturer manufacturer = manufacturerManager.findByLicenseNo(licenseNo);
-            String pass = generatePassword(manufacturer);
-            return Base64.getEncoder().encodeToString(Base64.getEncoder().encodeToString(pass.getBytes()).getBytes());
-        }
-        else {
-            throw new CustomException("Permission denied", HttpStatus.FORBIDDEN);
-        }
-    }
-
-    public AccessTokenResponse checkUser(String licenseNo) {
-        Set<String> userRoles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
-        if (userRoles != null && userRoles.stream().anyMatch(r -> r.contains("SUPERADMIN"))) {
-            Manufacturer manufacturer = manufacturerManager.findByLicenseNo(licenseNo);
-            String pass = generatePassword(manufacturer);
-            return loginService.login(new LoginRequestDto(licenseNo, pass, null), externalMetaDataManager.findByKey("apkVersion").getValue());
-        } else {
-            throw new CustomException("Permission denied", HttpStatus.NO_CONTENT);
-        }
-    }
-
 }

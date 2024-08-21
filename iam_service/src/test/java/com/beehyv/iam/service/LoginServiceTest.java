@@ -44,14 +44,6 @@ public class LoginServiceTest {
     private LoginService loginService;
     @Value("${config.realm.resource}")
     private String realmResource;
-    @Value("${external.tcs.username}")
-    private String tcsUsername;
-    @Value("${external.tcs.password}")
-    private String tcsPassword;
-    @Value("${service.superadmin.username}")
-    private String superadminUsername;
-    @Value("${service.superadmin.password}")
-    private String superadminPassword;
     @Value("${service.fortification.baseUrl}")
     private String fortificationBaseUrl;
     @Value("${service.lab.baseUrl}")
@@ -61,36 +53,6 @@ public class LoginServiceTest {
     public void setup() {
         // Initialize mocks and inject into the service
     }
-
-//    @Test
-//    public void testLogin() {
-//        LoginRequestDto loginRequestDto = new LoginRequestDto();
-//        loginRequestDto.setUserName("testUser");
-//        loginRequestDto.setPassword("testPassword");
-//
-//        AccessTokenResponse mockResponse = new AccessTokenResponse();
-//        when(keycloakCustomConfig.getAccessToken(any(LoginRequestDto.class))).thenReturn(mockResponse);
-//
-//        AccessTokenResponse response = loginService.login(loginRequestDto);
-//
-//        assertNotNull(response);
-//        verify(keycloakCustomConfig).getAccessToken(loginRequestDto);
-//    }
-
-
-//    @Test
-//    public void testExternalLogin_InvalidCredentials() {
-//        LoginRequestDto loginRequestDto = new LoginRequestDto();
-//        loginRequestDto.setUserName("invalidUser");
-//        loginRequestDto.setPassword("invalidPassword");
-//
-//        CustomException exception = assertThrows(CustomException.class, () -> {
-//            loginService.externalLogin(loginRequestDto);
-//        });
-//
-//        assertEquals("Invalid Credentials", exception.getMessage());
-//    }
-
 
     @Test
     public void testRefreshToken() {
@@ -104,20 +66,6 @@ public class LoginServiceTest {
         verify(keycloakCustomConfig).refreshToken(refreshToken);
     }
 
-
-//    @Test
-//    public void testCheckLabUserLoginForMobile_Success() {
-//        Set<String> roles = new HashSet<>();
-//        roles.add("ROLE_MONITOR");
-//        Map<String, Object> userInfo = new HashMap<>();
-//        userInfo.put("roles", roles);
-//
-//        when(keycloakInfo.getUserInfo()).thenReturn(userInfo);
-//
-//        String result = loginService.checkLabUserLoginForMobile();
-//
-//        assertEquals("success", result);
-//    }
 
 
 }

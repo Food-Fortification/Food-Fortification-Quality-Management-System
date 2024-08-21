@@ -1,15 +1,13 @@
 package com.beehyv.iam.dto.requestDto;
 
 import com.beehyv.iam.enums.AttributeScoreType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class AttributeRequestDto extends BaseRequestDto{
 
     private Long id;

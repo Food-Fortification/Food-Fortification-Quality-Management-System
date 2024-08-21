@@ -1,31 +1,25 @@
 package com.beehyv.iam.service;
 
 import com.beehyv.iam.config.KeycloakCustomConfig;
-import com.beehyv.iam.dto.external.FssaiLicenseResponseDto;
 import com.beehyv.iam.dto.requestDto.*;
 import com.beehyv.iam.dto.responseDto.*;
 import com.beehyv.iam.enums.*;
-import com.beehyv.iam.helper.ExternalRestHelper;
 import com.beehyv.iam.helper.FortificationRestHelper;
 import com.beehyv.iam.manager.*;
 import com.beehyv.iam.mapper.BaseMapper;
 import com.beehyv.iam.mapper.ManufacturerMapper;
 import com.beehyv.iam.model.*;
 import com.beehyv.iam.utils.DtoMapper;
-import com.beehyv.iam.utils.FunctionUtils;
 import com.beehyv.parent.exceptions.CustomException;
 import com.beehyv.parent.keycloakSecurity.KeycloakInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.netty.handler.codec.http.HttpUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.Constants;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -57,22 +51,12 @@ public class ManufacturerService {
     private final StateManager stateManager;
     private final VillageManager villageManager;
     private final CountryManager countryManager;
-    private final ExternalMetaDataManager externalMetaDataManager;
-    private final FssaiManufacturerErrorLogService fssaiManufacturerErrorLogService;
-    private final UserService userService;
-    private final LoginService loginService;
+
 
     @Value("${config.realm.resource}")
     private String realmResource;
     @Value("${service.fortification.baseUrl}")
     private String fortificationBaseUrl;
-    @Value(("${service.superadmin.username}"))
-    private String superadminUsername;
-    @Value("${service.lab.baseUrl}")
-    private String labBaseUrl;
-    @Value(("${service.superadmin.password}"))
-    private String superadminPassword;
-    private static final RestTemplate restTemplate = new RestTemplate();
 
     public Manufacturer create(ManufacturerRequestDto manufacturerRequestDto, String accessToken){
         Manufacturer manufacturer = manufacturerMapper.toEntity(manufacturerRequestDto);
@@ -96,129 +80,6 @@ public class ManufacturerService {
        return manufacturerManager.create(manufacturer);
     }
 
-    public String createFssaiManufacturer(FssaiManufacturerRequestDto fssaiManufacturerRequestDto) {
-       Manufacturer existingManufacturer =  manufacturerManager.findByLicenseNo(fssaiManufacturerRequestDto.getLicenseNumber());
-       if(existingManufacturer != null) return "Manufacturer with provided license number already exists";
-       ExternalMetaData fssaiLicenseNoApi = externalMetaDataManager.findByKey("fssaiLicenseNo");
-        List<FssaiLicenseResponseDto> fssaiLicenseResponseDtoList = new ArrayList<>();
-       try {
-           fssaiLicenseResponseDtoList = ExternalRestHelper.validateFssaiLicenseNo(fssaiLicenseNoApi.getValue() + fssaiManufacturerRequestDto.getLicenseNumber());
-       }catch (Exception e){
-           return "Validation of License number with Fssai failed, Please contact Administrator";
-       }
-       try {
-           String districtName = FunctionUtils.getDistrictName(fssaiManufacturerRequestDto.getDistrictName());
-           if (districtName != null){
-               fssaiManufacturerRequestDto.setDistrictName(districtName);
-           }else {
-               return "Invalid District Name provided, Please contact Administrator";
-           }
-           List<String> categoryNames  = new ArrayList<>();
-           if (fssaiLicenseResponseDtoList.stream().anyMatch(dto -> UserCategory.Yes.equals(dto.getPremix()))) categoryNames.add("PREMIX");
-           if (fssaiLicenseResponseDtoList.stream().anyMatch(dto -> UserCategory.Yes.equals(dto.getFRK()))) categoryNames.add("FRK");
-           if (fssaiLicenseResponseDtoList.stream().anyMatch(dto -> UserCategory.Yes.equals(dto.getMiller()))) categoryNames.add("MILLER");
-           fssaiManufacturerRequestDto.setCategoryNames(categoryNames);
-           String fortificationUrl = fortificationBaseUrl + "fortification/category";
-           UriComponents builder = UriComponentsBuilder.fromHttpUrl(fortificationUrl)
-                   .queryParam("independentBatch", false)
-                   .build();
-           AccessTokenResponse accessTokenResponse =  loginService.login(new LoginRequestDto(superadminUsername, superadminPassword, null), externalMetaDataManager.findByKey("apkVersion").getValue());
-           ListResponse<CategoryResponseDto> response = FortificationRestHelper.fetchCategoryListResponse(builder.toUriString(), accessTokenResponse.getToken());
-           ManufacturerRequestDto manufacturerRequestDto = getManufacturerRequestDto(fssaiManufacturerRequestDto, response);
-
-           Village village = villageManager.findByDistrictNameAndVillageName(fssaiManufacturerRequestDto.getVillageName(), fssaiManufacturerRequestDto.getDistrictName());
-           if (village == null) {
-               village = new Village();
-               village.setName(fssaiManufacturerRequestDto.getName());
-               village.setDistrict(districtManager.findByName(fssaiManufacturerRequestDto.getDistrictName()));
-               village = villageManager.create(village);
-           }
-
-           AddressRequestDto addressRequestDTO = getAddressRequestDto(fssaiManufacturerRequestDto, village);
-           manufacturerRequestDto.setAddress(addressRequestDTO);
-
-           Manufacturer manufacturer = create(manufacturerRequestDto, accessTokenResponse.getToken());
-           if (fssaiLicenseResponseDtoList.stream().noneMatch(FssaiLicenseResponseDto::getLicenseActiveFlag))manufacturer.setLicenseStatus(false);
-
-           String[] s = manufacturer.getName().split(" ");
-           UserRequestDto userRequestDto = new UserRequestDto();
-           if(s.length>=1){
-               userRequestDto.setFirstName(s[0]);
-           }
-           if(s.length>1){
-               String lastName = String.join(" ", Arrays.copyOfRange(s, 1, s.length));
-               userRequestDto.setLastName(lastName);
-           }
-           userRequestDto.setEmail(fssaiManufacturerRequestDto.getEmailAddress());
-           userRequestDto.setUserName(fssaiManufacturerRequestDto.getLicenseNumber());
-           userRequestDto.setPassword(userService.generatePassword(manufacturer));
-           userRequestDto.setManufacturerId(manufacturer.getId());
-           userRequestDto.setRolesMap(
-                   manufacturer.getManufacturerCategories()
-                           .stream().map(c -> {
-                               RoleRequestDto roleRequestDto = new RoleRequestDto();
-                               roleRequestDto.setRoleName("ADMIN");
-                               roleRequestDto.setRoleCategoryType("MODULE");
-                               roleRequestDto.setCategoryId(c.getCategoryId());
-                               roleRequestDto.setCategoryName(response.getData().stream().filter(category -> Objects.equals(category.getId(), c.getCategoryId())).findFirst().orElseThrow().getName());
-                               response.getData().forEach(r -> {
-                                   if (r.getId().equals(c.getId())) {
-                                       roleRequestDto.setCategoryName(r.getName());
-                                   }
-                               });
-                               return roleRequestDto;
-                           }).toList()
-           );
-           userService.addUser(userRequestDto, true);
-           return "Successfully Created";
-       }catch (Exception e){
-           try {
-               fssaiManufacturerErrorLogService.create(new ObjectMapper().writeValueAsString(fssaiManufacturerRequestDto), e.getMessage());
-           } catch (JsonProcessingException ex) {
-               log.info("Error in object mapper in create fssai manufacturer method.");
-               throw new CustomException("Oops! Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
-           }
-           throw new CustomException("Something went wrong while creating manufacturer in ForTrace, please contact administrator", HttpStatus.BAD_REQUEST);
-       }
-    }
-
-    private ManufacturerRequestDto getManufacturerRequestDto(FssaiManufacturerRequestDto fssaiManufacturerRequestDto, ListResponse<CategoryResponseDto> response){
-        ManufacturerRequestDto manufacturerRequestDto = new ManufacturerRequestDto();
-        manufacturerRequestDto.setName(fssaiManufacturerRequestDto.getName());
-        manufacturerRequestDto.setStatusId(statusManager.findByName("Active").getId());
-        manufacturerRequestDto.setAccreditedByAgency(fssaiManufacturerRequestDto.getAccreditedByAgency());
-        manufacturerRequestDto.setAgencyName(fssaiManufacturerRequestDto.getAgencyName());
-        manufacturerRequestDto.setLicenseNumber(fssaiManufacturerRequestDto.getLicenseNumber());
-        manufacturerRequestDto.setManufacturerType(fssaiManufacturerRequestDto.getManufacturerType());
-        manufacturerRequestDto.setManufacturerType(fssaiManufacturerRequestDto.getManufacturerType());
-        manufacturerRequestDto.setVendorType(fssaiManufacturerRequestDto.getVendorType());
-
-        manufacturerRequestDto.setManufacturerCategory(
-                fssaiManufacturerRequestDto.getCategoryNames()
-                        .stream().map(categoryName -> {
-                            ManufacturerCategoryRequestDto manufacturerCategoryRequestDto = new ManufacturerCategoryRequestDto();
-                            response.getData().forEach(r -> {
-                                if (r.getName().equals(categoryName)) {
-                                    manufacturerCategoryRequestDto.setIsEnabled(true);
-                                    manufacturerCategoryRequestDto.setCategoryId(r.getId());
-                                }
-                            });
-                            return manufacturerCategoryRequestDto;
-                        }).collect(Collectors.toSet())
-        );
-        return manufacturerRequestDto;
-    }
-
-    private static AddressRequestDto getAddressRequestDto(FssaiManufacturerRequestDto fssaiManufacturerRequestDto, Village village) {
-        AddressRequestDto addressRequestDTO = new AddressRequestDto();
-        addressRequestDTO.setVillageId(village.getId());
-        addressRequestDTO.setLatitude(fssaiManufacturerRequestDto.getLatitude());
-        addressRequestDTO.setLongitude(fssaiManufacturerRequestDto.getLongitude());
-        addressRequestDTO.setLaneOne(fssaiManufacturerRequestDto.getLaneOne());
-        addressRequestDTO.setLaneTwo(fssaiManufacturerRequestDto.getLaneTwo());
-        addressRequestDTO.setPinCode(fssaiManufacturerRequestDto.getPinCode());
-        return addressRequestDTO;
-    }
 
     public Long createManufacturer(ManufacturerRequestDto manufacturerRequestDto){
         long manufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
@@ -242,87 +103,6 @@ public class ManufacturerService {
         currentManufacturer.getSourceManufacturers().add(manufacturer);
         manufacturerManager.update(currentManufacturer);
        return manufacturer.getId();
-    }
-
-    public NameAddressResponseDto getMaterialManufacturer(String licenseNo, Long categoryId){
-        Manufacturer manufacturer = manufacturerManager.findByLicenseNoAndCategoryId(licenseNo, categoryId);
-        if(manufacturer == null){
-            manufacturer = manufacturerManager.findByLicenseNo(licenseNo);
-            if(manufacturer != null){
-                ManufacturerCategory manufacturerCategory = new ManufacturerCategory();
-                manufacturerCategory.setCategoryId(categoryId);
-                manufacturerCategory.setIsEnabled(true);
-                manufacturerCategory.setCanSkipRawMaterials(false);
-                manufacturerCategory.setManufacturer(manufacturer);
-                Set<ManufacturerCategory> manufacturerCategories = manufacturer.getManufacturerCategories();
-                manufacturerCategories.add(manufacturerCategory);
-                manufacturer.setManufacturerCategories(manufacturerCategories);
-                manufacturer = manufacturerManager.update(manufacturer);
-            }
-        }
-
-        if(manufacturer == null) {
-            ExternalMetaData fssaiLicenseNoApi = externalMetaDataManager.findByKey("fssaiLicenseNo");
-            List<FssaiLicenseResponseDto> dtoList = ExternalRestHelper.validateFssaiLicenseNo(fssaiLicenseNoApi.getValue() + licenseNo);
-            District district;
-            String districtName = FunctionUtils.getDistrictName(dtoList.get(0).getDistrictName());
-            if (districtName != null) dtoList.get(0).setDistrictName(districtName);
-            try{
-                district = districtManager.findByName(dtoList.get(0).getDistrictName());
-            }catch (Exception e){
-                State state = stateManager.findByNameAndCountryId(dtoList.get(0).getStateName(), countryManager.findByName("India").getId());
-                district = new District();
-                district.setName(dtoList.get(0).getDistrictName());
-                district.setState(state);
-                district = districtManager.create(district);
-            }
-            Village village = new Village();
-            village.setName(dtoList.get(0).getVillageName() == null ? dtoList.get(0).getTalukName() : dtoList.get(0).getVillageName());
-            village.setDistrict(district);
-            village = villageManager.create(village);
-
-            AddressRequestDto addressRequestDto = new AddressRequestDto();
-            addressRequestDto.setCountryName("India");
-            addressRequestDto.setStateName(dtoList.get(0).getStateName());
-            addressRequestDto.setDistrictName(dtoList.get(0).getDistrictName());
-            addressRequestDto.setVillageId(village.getId());
-            addressRequestDto.setVillageName(village.getName());
-            addressRequestDto.setPinCode(dtoList.get(0).getPremisePincode());
-
-            String[] address = dtoList.get(0).getPremiseAddress().split(",", 2);
-            if (address.length == 2) {
-                addressRequestDto.setLaneOne(address[0]);
-                addressRequestDto.setLaneTwo(address[1]);
-            } else {
-                addressRequestDto.setLaneOne(dtoList.get(0).getPremiseAddress());
-            }
-
-            ManufacturerCategoryRequestDto manufacturerCategoryRequestDto = new ManufacturerCategoryRequestDto();
-            manufacturerCategoryRequestDto.setCategoryId(categoryId);
-
-            ManufacturerRequestDto manufacturerRequestDto = new ManufacturerRequestDto();
-            manufacturerRequestDto.setLicenseNumber(dtoList.get(0).getLicenseNo());
-            manufacturerRequestDto.setName(dtoList.get(0).getCompanyName());
-            manufacturerRequestDto.setAgencyName(dtoList.get(0).getCompanyName());
-            manufacturerRequestDto.setManufacturerCategory(Set.of(manufacturerCategoryRequestDto));
-            manufacturerRequestDto.setAddress(addressRequestDto);
-            manufacturerRequestDto.setVendorType(VendorType.Manufacturer);
-            manufacturerRequestDto.setManufacturerType(ManufacturerType.PRIVATE);
-            manufacturer = create(manufacturerRequestDto, null);
-        }
-
-        long manufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
-        Manufacturer currentManufacturer = manufacturerManager.findById(manufacturerId);
-        if(currentManufacturer.getSourceManufacturers() == null) {
-            currentManufacturer.setSourceManufacturers(new HashSet<>());
-        }
-        currentManufacturer.getSourceManufacturers().add(manufacturer);
-        manufacturerManager.update(currentManufacturer);
-
-        NameAddressResponseDto responseDto = new NameAddressResponseDto();
-        responseDto.setId(manufacturer.getId());
-        responseDto.setName(manufacturer.getName());
-        return responseDto;
     }
 
     public ManufacturerRequestDto createMaterialManufacturerWithNewCountry(ManufacturerRequestDto dto){
@@ -582,16 +362,6 @@ public class ManufacturerService {
         return manufacturerManager.getTestManufacturerIds();
     }
 
-    public Long getManufacturerIdByExternalManufacturerId(String externalManufacturerId){
-        Manufacturer manufacturer = manufacturerManager.findByExternalManufacturerId(externalManufacturerId);
-        return manufacturer == null ? 0L : manufacturer.getId();
-    }
-
-    public String getExternalManufacturerIdByManufacturerId(Long manufacturerId){
-        Manufacturer manufacturer = manufacturerManager.findExternalManufacturerIdByManufacturerId(manufacturerId);
-        return manufacturer == null ? "" : manufacturer.getExternalManufacturerId();
-    }
-
     public ListResponse<ManufacturerDetailsResponseDto> getAllManufacturersWithGeoFilter(String search, Long stateId, Long districtId, Integer pageNumber, Integer pageSize) {
         List<Manufacturer> entities = manufacturerManager.getAllManufacturersWithGeoFilter(search, stateId, districtId, pageNumber, pageSize);
         Long count = manufacturerManager.getAllManufacturersCountWithGeoFilter(search, stateId, districtId);
@@ -652,34 +422,4 @@ public class ManufacturerService {
         return manufacturerCategoryManager.filterManufacturersByCategory(categoryId, manufacturerIds);
     }
 
-    public NameAddressResponseDto validateFssaiLicenseNo(String licenseNo, Long categoryId){
-        ExternalMetaData fssaiLicenseNoApi = externalMetaDataManager.findByKey("fssaiLicenseNo");
-        ExternalRestHelper.validateFssaiLicenseNo(fssaiLicenseNoApi.getValue() + licenseNo);
-        List<Long> targetCategoryIds = FortificationRestHelper.fetchResponse(fortificationBaseUrl + "fortification/category/" + categoryId + "/next", keycloakInfo.getAccessToken());
-        Manufacturer manufacturer = manufacturerManager.findByLicenseNoAndCategoryId(licenseNo, targetCategoryIds);
-        if(manufacturer == null) throw new CustomException("Manufacturer doesn't exist for the license number!", HttpStatus.BAD_REQUEST);
-        NameAddressResponseDto responseDto = new NameAddressResponseDto();
-        responseDto.setId(manufacturer.getId());
-        responseDto.setName(manufacturer.getName());
-        responseDto.setLicenseNo(manufacturer.getLicenseNumber());
-        return responseDto;
-    }
-
-    public String findLicenseNumberById(Long id){
-        try{
-         return manufacturerManager.findLicenseNumberById(id);
-        }
-        catch (Exception e){
-            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    public String findLicenseNumberByName(String name){
-        try{
-            return manufacturerManager.findLicenseNumberByName(name);
-        }
-        catch (Exception e){
-            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
 }

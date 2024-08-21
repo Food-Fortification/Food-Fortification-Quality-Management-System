@@ -17,7 +17,6 @@ public class LotMapper implements Mappable<LotResponseDto, LotRequestDto, Lot>, 
     private final BaseMapper<UOMResponseDto, UOMRequestDto, UOM> uomMapper = getForClass(UOMMapper.class);
     private final BaseMapper<BatchResponseDto, BatchRequestDto, Batch> batchMapper = getForClass(BatchMapper.class);
     private final BaseMapper<StateResponseDto, StateRequestDto, State> stateMapper = getForClass(StateMapper.class);
-    private final BaseMapper<TransportQuantityDetailsResponseDto, TransportQuantityDetailsRequestDto, TransportQuantityDetails> transportQuantityDetailsMapper = getForClass(TransportQuantityDetailsMapper.class);
 
     @Override
     public LotResponseDto toDto(Lot entity) {
@@ -38,10 +37,6 @@ public class LotMapper implements Mappable<LotResponseDto, LotRequestDto, Lot>, 
                     .map(this::mapToDtoHelper)
                     .sorted(Comparator.comparing(LotResponseDto::getId).reversed())
                     .collect(Collectors.toCollection(LinkedHashSet::new)));
-        }
-        if(entity.getTransportQuantityDetails()!=null){
-            dto.setTransportQuantityDetailsResponseDto(transportQuantityDetailsMapper.toDto(entity.getTransportQuantityDetails()));
-
         }
         if(entity.getLotProperties() != null) {
             Set<LotPropertyResponseDto> list = entity.getLotProperties()
@@ -92,9 +87,6 @@ public class LotMapper implements Mappable<LotResponseDto, LotRequestDto, Lot>, 
                     .collect(Collectors.toSet());
             entity.setWastes(set);
 
-        }
-        if(dto.getTransportQuantityDetailsRequestDto() != null) {
-            entity.setTransportQuantityDetails(transportQuantityDetailsMapper.toEntity(dto.getTransportQuantityDetailsRequestDto()));
         }
         if(dto.getLotProperties() != null) {
             Set<LotProperty> list = dto.getLotProperties()

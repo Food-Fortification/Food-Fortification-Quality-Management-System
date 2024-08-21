@@ -36,8 +36,7 @@ public class UserMapper implements Mappable<UserResponseDto, UserRequestDto, Use
         entity.setFirstName(dto.getFirstName());
         entity.setLastName(dto.getLastName());
         entity.setPassword(dto.getPassword());
-       if(dto.getManufacturerId()!=null && dto.getManufacturerId()!=0) entity.setManufacturer(new Manufacturer(dto.getManufacturerId()));
-        //TODO:check the lastlogin field
+        if(dto.getManufacturerId()!=null && dto.getManufacturerId()!=0) entity.setManufacturer(new Manufacturer(dto.getManufacturerId()));
         return entity;
     }
     public static User toEntity(UserRequestDto dto, User existingUser){

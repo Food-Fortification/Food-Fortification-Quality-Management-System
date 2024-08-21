@@ -56,9 +56,6 @@ public class Lot extends Base {
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "state_id")
     private State state;
-//    @ManyToOne(cascade = CascadeType.DETACH)
-//    @JoinColumn(name = "batch_id")
-//    private Batch batch;
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "uom_id")
     private UOM uom;
@@ -86,10 +83,6 @@ public class Lot extends Base {
 
     @Enumerated(EnumType.STRING)
     private ManufacturerCategoryAction action;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "transportQuantityDetails_id",referencedColumnName = "id")
-    private TransportQuantityDetails transportQuantityDetails;
 
     public Lot(Long sourceLotId) {
         this.id = sourceLotId;

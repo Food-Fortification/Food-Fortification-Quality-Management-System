@@ -1,14 +1,11 @@
 package com.beehyv.fortification.service;
 
-import com.beehyv.fortification.dto.external.TargetLotsExternalRequestDto;
 import com.beehyv.fortification.dto.requestDto.*;
 import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.enums.ActionType;
 import com.beehyv.fortification.enums.SampleTestResult;
-import org.springframework.core.io.Resource;
 
 import java.util.List;
-import java.util.Map;
 
 public interface LotService {
     Long createLot(Long categoryId, LotRequestDto dto);
@@ -40,11 +37,6 @@ public interface LotService {
     void updateBatchInspectionStatus(Long lotId, Boolean isBlocked);
 
     List<Long> createTargetLotFromSourceLots(TargetLotRequestDto dto, Long categoryId, Boolean externalDispatch);
-
-    Map<String, String> createTargetLotsFromSourceLots(TargetLotsExternalRequestDto dto, Long categoryId);
-
-
-    void migrateData();
 
     LotHistoryResponseDto getHistoryForLot(Long lotId);
 

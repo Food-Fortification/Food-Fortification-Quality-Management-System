@@ -158,7 +158,7 @@ public class AdminServiceImpl implements AdminService {
                                     if (!dtos.get(0).isOutsidePlatform()) {
                                         List<String> usersStateList = new ArrayList<>();
                                         usersStateList.add("approved");
-                                        checkAndSaveRoleCategoryandState(
+                                        checkAndSaveRoleCategoryAndState(
                                                 category,
                                                 source,
                                                 "USER",
@@ -168,7 +168,7 @@ public class AdminServiceImpl implements AdminService {
 
                                         List<String> usersStateListAdmin = new ArrayList<>();
                                         usersStateListAdmin.add("approved");
-                                        checkAndSaveRoleCategoryandState(
+                                        checkAndSaveRoleCategoryAndState(
                                                 category,
                                                 source,
                                                 "ADMIN",
@@ -201,7 +201,7 @@ public class AdminServiceImpl implements AdminService {
                                 usersStateList.add("sentBackRejected");
                                 usersStateList.add("receivedRejected");
 
-                                checkAndSaveRoleCategoryandState(
+                                checkAndSaveRoleCategoryAndState(
                                         category,
                                         category,
                                         "USER",
@@ -218,7 +218,7 @@ public class AdminServiceImpl implements AdminService {
                                 labStateList.add("sentLotSampleToLabTest");
                                 labStateList.add("lotSampleInLab");
 
-                                checkAndSaveRoleCategoryandState(
+                                checkAndSaveRoleCategoryAndState(
                                         category,
                                         category,
                                         "USER",
@@ -238,7 +238,7 @@ public class AdminServiceImpl implements AdminService {
                                 // lot
                                 usersStateListAdmin.add("sentBackRejected");
                                 usersStateListAdmin.add("receivedRejected");
-                                checkAndSaveRoleCategoryandState(
+                                checkAndSaveRoleCategoryAndState(
                                         category,
                                         category,
                                         "ADMIN",
@@ -254,7 +254,7 @@ public class AdminServiceImpl implements AdminService {
                                 //lot
                                 labStateListAdmin.add("sentLotSampleToLabTest");
                                 labStateListAdmin.add("lotSampleInLab");
-                                checkAndSaveRoleCategoryandState(
+                                checkAndSaveRoleCategoryAndState(
                                         category,
                                         category,
                                         "ADMIN",
@@ -269,7 +269,7 @@ public class AdminServiceImpl implements AdminService {
                                 usersStateList.add("batchToDispatch");
                                 usersStateList.add("partiallyDispatched");
                                 usersStateList.add("fullyDispatched");
-                                checkAndSaveRoleCategoryandState(
+                                checkAndSaveRoleCategoryAndState(
                                         category,
                                         category,
                                         "USER",
@@ -283,7 +283,7 @@ public class AdminServiceImpl implements AdminService {
                                 usersStateListAdmin.add("batchToDispatch");
                                 usersStateListAdmin.add("partiallyDispatched");
                                 usersStateListAdmin.add("fullyDispatched");
-                                checkAndSaveRoleCategoryandState(
+                                checkAndSaveRoleCategoryAndState(
                                         category,
                                         category,
                                         "ADMIN",
@@ -316,7 +316,7 @@ public class AdminServiceImpl implements AdminService {
                                         usersStateList.add("receivedRejected");
                                         usersStateList.add("lotSampleRejected");
 
-                                        checkAndSaveRoleCategoryandState(
+                                        checkAndSaveRoleCategoryAndState(
                                                 target,
                                                 base,
                                                 "USER",
@@ -330,7 +330,7 @@ public class AdminServiceImpl implements AdminService {
                                         labStateList.add("sentLotSampleToLabTest");
                                         labStateList.add("lotSampleInLab");
 
-                                        checkAndSaveRoleCategoryandState(
+                                        checkAndSaveRoleCategoryAndState(
                                                 target,
                                                 base,
                                                 "USER",
@@ -342,7 +342,7 @@ public class AdminServiceImpl implements AdminService {
                                         usersStateListAdmin.add("approved");
                                         usersStateListAdmin.add("sentBackRejected");
                                         usersStateListAdmin.add("receivedRejected");
-                                        checkAndSaveRoleCategoryandState(
+                                        checkAndSaveRoleCategoryAndState(
                                                 category,
                                                 category,
                                                 "ADMIN",
@@ -355,7 +355,7 @@ public class AdminServiceImpl implements AdminService {
                                         labStateListAdmin.add("approved");
                                         labStateListAdmin.add("sentLotSampleToLabTest");
                                         labStateListAdmin.add("lotSampleInLab");
-                                        checkAndSaveRoleCategoryandState(
+                                        checkAndSaveRoleCategoryAndState(
                                                 target,
                                                 category,
                                                 "ADMIN",
@@ -365,7 +365,7 @@ public class AdminServiceImpl implements AdminService {
                                     } else {
                                         List<String> usersStateList = new ArrayList<>();
                                         usersStateList.add("approved");
-                                        checkAndSaveRoleCategoryandState(
+                                        checkAndSaveRoleCategoryAndState(
                                                 target,
                                                 category,
                                                 "USER",
@@ -376,7 +376,7 @@ public class AdminServiceImpl implements AdminService {
 
                                         List<String> usersStateListAdmin = new ArrayList<>();
                                         usersStateListAdmin.add("approved");
-                                        checkAndSaveRoleCategoryandState(
+                                        checkAndSaveRoleCategoryAndState(
                                                 category,
                                                 category,
                                                 "ADMIN",
@@ -399,7 +399,7 @@ public class AdminServiceImpl implements AdminService {
                                 usersStateList.add("approved");
                                 usersStateList.add("lotSampleLabTestDone");
 
-                                checkAndSaveRoleCategoryandState(
+                                checkAndSaveRoleCategoryAndState(
                                         target,
                                         category,
                                         "APPROVER",
@@ -416,7 +416,7 @@ public class AdminServiceImpl implements AdminService {
                                 usersStateListAdmin.add("approved");
                                 usersStateList.add("lotSampleLabTestDone");
 //                                usersStateListAdmin.add("rejected");
-                                checkAndSaveRoleCategoryandState(
+                                checkAndSaveRoleCategoryAndState(
                                         manager.findCategoryByName(targetDto.getName()),
                                         category,
                                         "ADMIN",
@@ -434,7 +434,7 @@ public class AdminServiceImpl implements AdminService {
                                     usersStateListLab.add("approved");
                                     usersStateList.add("lotSampleLabTestDone");
 //                                    usersStateListLab.add("rejected");
-                                    checkAndSaveRoleCategoryandState(
+                                    checkAndSaveRoleCategoryAndState(
                                             manager.findCategoryByName(targetDto.getName()),
                                             category,
                                             "APPROVER",
@@ -450,7 +450,7 @@ public class AdminServiceImpl implements AdminService {
                                     usersStateListAdminLab.add("approved");
                                     usersStateList.add("lotSampleLabTestDone");
 //                                    usersStateListAdminLab.add("rejected");
-                                    checkAndSaveRoleCategoryandState(
+                                    checkAndSaveRoleCategoryAndState(
                                             manager.findCategoryByName(targetDto.getName()),
                                             category,
                                             "ADMIN",
@@ -526,7 +526,7 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    private void checkAndSaveRoleCategoryandState(Category category, Category baseCategory, String role, RoleCategoryType type, List<TargetDto> target, List<String> stateList) {
+    private void checkAndSaveRoleCategoryAndState(Category category, Category baseCategory, String role, RoleCategoryType type, List<TargetDto> target, List<String> stateList) {
 
         RoleCategory roleCategory = roleCategoryManager
                 .findByCategoryAndRoleNames(category.getName(), role, type);
@@ -596,16 +596,5 @@ public class AdminServiceImpl implements AdminService {
         return category;
     }
 
-    private static Set<RoleCategoryStateRequestDto> getRoleCategoryStateRequestDtos(Category category, List<State> states) {
-        Set<RoleCategoryStateRequestDto> roleCategoryStateRequestDtoSet = new HashSet<>();
-        states.forEach(state -> {
-            RoleCategoryStateRequestDto roleCategoryStateRequestDto = new RoleCategoryStateRequestDto();
-            roleCategoryStateRequestDto.setStateId(state.getId());
-            roleCategoryStateRequestDto.setCategoryId(category.getId());
-            roleCategoryStateRequestDtoSet.add(roleCategoryStateRequestDto);
-        });
-
-        return roleCategoryStateRequestDtoSet;
-    }
 
 }

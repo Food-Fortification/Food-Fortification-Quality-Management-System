@@ -27,7 +27,7 @@ public class Manufacturer extends Base {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String type; //TODO: Think to keep an enum, what is it?
+    private String type;
     private Boolean accreditedByAgency;
     private VendorType vendorType;
     private String agencyName;

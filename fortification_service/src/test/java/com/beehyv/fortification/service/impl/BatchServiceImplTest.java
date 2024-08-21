@@ -284,6 +284,7 @@ class BatchServiceImplTest {
         when(categoryManager.isCategoryInspectionUser(anyLong(), any())).thenReturn(false);
         when(keycloakInfo.getUserInfo()).thenReturn(Map.of("manufacturerId", 1L));
         when(batchManager.findByIdAndManufacturerId(batchId, 1L)).thenReturn(batch);
+        when(keycloakInfo.getUserInfo()).thenReturn(Map.of("manufacturerId", 1L, "roles", new HashSet<>(Set.of("abc", "admin"))));
 
         // Act
         BatchResponseDto result = batchService.getBatchById(categoryId, batchId);
@@ -338,18 +339,6 @@ class BatchServiceImplTest {
         assertNotNull(result);
     }
 
-    @Test
-    void testDispatchExternalBatch() {
-        // Arrange
-        Long categoryId = 1L;
-        EntityStateRequestDTO entityStateRequestDTO = new EntityStateRequestDTO();
-        entityStateRequestDTO.setDateOfAction(new Date());
-        entityStateRequestDTO.setBatchId(1L);
-        when(stateManager.findByName("batchToDispatch")).thenReturn(state);
-
-        // Act & Assert
-        assertDoesNotThrow(() -> batchService.dispatchExternalBatch(categoryId, entityStateRequestDTO));
-    }
 
     @Test
     void testUpdateBatchStatus() {

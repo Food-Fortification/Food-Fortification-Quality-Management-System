@@ -72,8 +72,7 @@ public class StateLabTestAccessService {
             return false;
         }
         if(stateLabTestAccessType.equals(StateLabTestAccessType.LAB_SELECTION)){
-            return true; // true for fssai flow
-//            return stateLabTestAccess.getLabSelectionAllowed();
+        return stateLabTestAccess.getLabSelectionAllowed();
         } else if (stateLabTestAccessType.equals(StateLabTestAccessType.RAWMATERIALS_PROCURED)) {
             if (manufacturer.getIsRawMaterialsProcured()) return stateLabTestAccess.getIsStateProcuredRawMaterials();
             return false;

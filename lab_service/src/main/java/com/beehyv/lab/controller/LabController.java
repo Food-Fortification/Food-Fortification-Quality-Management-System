@@ -2,15 +2,11 @@ package com.beehyv.lab.controller;
 
 import com.beehyv.lab.dto.requestDto.DashboardRequestDto;
 import com.beehyv.lab.dto.requestDto.LabRequestDTO;
-import com.beehyv.lab.dto.requestDto.LabSampleRequestDTO;
 import com.beehyv.lab.dto.requestDto.SearchListRequest;
 import com.beehyv.lab.dto.responseDto.*;
-import com.beehyv.lab.entity.LabSample;
 import com.beehyv.lab.service.LabService;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import java.util.Date;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -87,11 +83,6 @@ public class LabController {
         return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
 
-    @PostMapping("/validate/certificate")
-    public ResponseEntity<?> getValidation(@RequestParam Long labId){
-        labService.validateNablCertificate(labId);
-        return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
-    }
 
     @PostMapping("labs/aggregate")
     public ResponseEntity<ListResponse<LabDashboardResponseDto>> getLabsAggregate(
@@ -108,10 +99,4 @@ public class LabController {
         ListResponse<LabSampleDetailsResponseDto> dtoList = labService.getLabSamplesDetails(dto,labId,type);
         return new ResponseEntity<>(dtoList, HttpStatus.OK);
     }
-
-    @GetMapping("certificate/{name}")
-    public ResponseEntity<String> getCertificateNoByName(@PathVariable String name){
-        return new ResponseEntity<>(labService.findCertificateByName(name), HttpStatus.OK);
-    }
-
 }

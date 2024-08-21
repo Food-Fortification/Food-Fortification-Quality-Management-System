@@ -164,11 +164,11 @@ public class CategoryManagerTest {
     void testFindAllBySuperUser() {
         // Arrange
         String roleCategoryType = "TestType";
-        Set<String> roles = new HashSet<>(List.of("Test_SUPERADMIN"));
+        Set<String> roles = new HashSet<>(List.of("TEST_SUPERADMIN"));
         when(keycloakInfo.getUserInfo()).thenReturn(Collections.singletonMap("roles", roles));
         List<Category> expectedCategories = List.of(new Category());
-        when(categoryManager.findAllByNames(List.of("Test"))).thenReturn(expectedCategories);
-
+        when(categoryManager.findAllByNames(List.of("TEST"))).thenReturn(expectedCategories);
+        when(categoryManager.findAllNamesByIndependentBatch(false)).thenReturn(List.of("TEST"));
         // Act
         List<Category> actualCategories = categoryManager.findAllBySuperUser(roleCategoryType);
 

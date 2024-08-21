@@ -1,6 +1,5 @@
 package com.beehyv.lab.controller;
 
-import com.beehyv.lab.dto.external.ExternalInspectionRequestDto;
 import com.beehyv.lab.dto.requestDto.InspectionRequestDTO;
 import com.beehyv.lab.enums.SampleType;
 import com.beehyv.lab.service.InspectionService;
@@ -8,7 +7,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,11 +37,6 @@ public class InspectionController {
     return new ResponseEntity<>(inspectionService.create(dto), HttpStatus.CREATED);
   }
 
-  @PostMapping("/external-test")
-  public ResponseEntity<?> createExternalInspection(@RequestBody ExternalInspectionRequestDto dto){
-    return new ResponseEntity<>(inspectionService.createExternalInspection(dto), HttpStatus.CREATED);
-  }
-
   @PutMapping("{id}")
   public ResponseEntity<?> update(@PathVariable Long id, @RequestBody InspectionRequestDTO dto){
     dto.setId(id);
@@ -56,7 +49,8 @@ public class InspectionController {
   }
 
   @GetMapping("samples/{type}/category/{categoryId}")
-  public ResponseEntity<?> getAllIdsBySampleType(@PathVariable SampleType type,                                                  @RequestParam(required = false) String sampleState ,
+  public ResponseEntity<?> getAllIdsBySampleType(@PathVariable SampleType type,
+                                                 @RequestParam(required = false) String sampleState,
                                                  @PathVariable Long categoryId,
                                                  @RequestParam(required = false) Integer pageNumber,
                                                  @RequestParam(required = false) Integer pageSize){

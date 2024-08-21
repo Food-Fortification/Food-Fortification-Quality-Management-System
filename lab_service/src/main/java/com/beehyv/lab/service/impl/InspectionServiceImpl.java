@@ -1,7 +1,6 @@
 package com.beehyv.lab.service.impl;
 
-import com.beehyv.lab.dto.external.ExternalInspectionRequestDto;
-import com.beehyv.lab.dto.external.ExternalLotDetailsResponseDto;
+
 import com.beehyv.lab.dto.requestDto.*;
 import com.beehyv.lab.dto.responseDto.AddressLocationResponseDto;
 import com.beehyv.lab.dto.responseDto.AddressResponseDTO;
@@ -18,7 +17,6 @@ import com.beehyv.lab.manager.SampleStateManager;
 import com.beehyv.lab.mapper.DTOMapper;
 import com.beehyv.lab.service.InspectionService;
 import com.beehyv.lab.service.LabService;
-import com.beehyv.parent.exceptions.CustomException;
 import com.beehyv.parent.keycloakSecurity.KeycloakInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
@@ -30,7 +28,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -102,38 +99,6 @@ public class InspectionServiceImpl implements InspectionService {
     }
     entity = inspectionManager.create(entity);
     return entity.getId();
-  }
-
-  public Long createExternalInspection(ExternalInspectionRequestDto dto){
-    log.info("External Request dto for creating lab sample : {{}}", dto);
-    if(inspectionManager.findSampleByLotNo(dto.getLotNo())){
-      throw new CustomException("Sample already exists for the given LotNo", HttpStatus.BAD_REQUEST);
-    }
-
-    InspectionRequestDTO inspectionRequestDTO  = new InspectionRequestDTO();
-    inspectionRequestDTO.setComments(dto.getLabSampleQuantity() + "kg sample is sent for testing");
-    inspectionRequestDTO.setBlocking(false);
-    inspectionRequestDTO.setExternalTest(true);
-
-    WastageRequestDto wastageRequestDto = new WastageRequestDto();
-    wastageRequestDto.setReportedDate(dto.getSampleSentDate());
-    wastageRequestDto.setWastageQuantity(dto.getLabSampleQuantity());
-
-    String url = Constants.FORTIFICATION_BASE_URL + "/4/lot/" + dto.getLotNo() + "/wastage/external";
-    ExternalLotDetailsResponseDto lotDto = helper.postApi(url, wastageRequestDto, ExternalLotDetailsResponseDto.class, keycloakInfo.getAccessToken());
-
-    String iamUrl = Constants.IAM_BASE_URL + "/manufacturer/" + lotDto.getManufacturerId() + "/name";
-    String manufacturerName = helper.fetchResponse(iamUrl, String.class, keycloakInfo.getAccessToken());
-    inspectionRequestDTO.setRequestedBy(manufacturerName);
-
-    LabSampleRequestDTO labSampleRequestDTO = new LabSampleRequestDTO();
-    labSampleRequestDTO.setLotId(lotDto.getLotId());
-    labSampleRequestDTO.setLotNo(dto.getLotNo());
-    labSampleRequestDTO.setCategoryId(lotDto.getCategoryId());
-    labSampleRequestDTO.setManufacturerId(lotDto.getManufacturerId());
-    labSampleRequestDTO.setSampleSentDate(dto.getSampleSentDate());
-    inspectionRequestDTO.setLabSample(labSampleRequestDTO);
-    return create(inspectionRequestDTO);
   }
 
 

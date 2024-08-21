@@ -13,16 +13,10 @@ import com.beehyv.fortification.mapper.BaseMapper;
 import com.beehyv.fortification.mapper.BatchMapper;
 import com.beehyv.fortification.mapper.LotMapper;
 import com.beehyv.fortification.mapper.MixMappingMonitorMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -83,17 +77,6 @@ public class FunctionUtils {
                     .collect(Collectors.toSet()));
         }
         return lotHistoryResponseDto;
-    }
-
-    public static List<DistrictJsonDto> getDistrictIdList() {
-        TypeReference<List<DistrictJsonDto>> typeReference = new TypeReference<List<DistrictJsonDto>>() {
-        };
-        InputStream inputStream = TypeReference.class.getResourceAsStream("/DistrctMap.json");
-        try {
-            return new ObjectMapper().readValue(inputStream, typeReference);
-        } catch (IOException e) {
-            return new ArrayList<>();
-        }
     }
 
     public ManufacturerCategoryAction  converStringToEnum(Long targetManufactureId, long categoryId, String token){

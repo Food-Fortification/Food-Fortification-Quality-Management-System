@@ -121,20 +121,6 @@ class BatchControllerTest {
         verify(batchService, times(1)).updateBatchStatus(categoryId, entityStateRequestDTO, actionType, sampleTestResult);
     }
 
-    @Test
-    void testDispatchExternalBatch() {
-        Long categoryId = 1L;
-        EntityStateRequestDTO entityStateRequestDTO = new EntityStateRequestDTO();
-        boolean isDispatched = true;
-
-        when(batchService.dispatchExternalBatch(categoryId, entityStateRequestDTO)).thenReturn(isDispatched);
-
-        ResponseEntity<Boolean> responseEntity = batchController.dispatchExternalBatch(entityStateRequestDTO, categoryId);
-
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(isDispatched, responseEntity.getBody());
-        verify(batchService, times(1)).dispatchExternalBatch(categoryId, entityStateRequestDTO);
-    }
 
     @Test
     void testGetBatchActions() {
