@@ -1,7 +1,10 @@
 package com.beehyv.Immudb.service;
 
 import com.beehyv.Immudb.dto.HistoryRequestDto;
+import com.beehyv.Immudb.dto.HistoryResponseDto;
+import com.beehyv.Immudb.dto.NameAddressResponseDto;
 import com.beehyv.Immudb.entity.BatchEventEntity;
+import com.beehyv.Immudb.mapper.HistoryMapper;
 import com.beehyv.Immudb.utils.HttpUtils;
 import com.beehyv.parent.exceptions.CustomException;
 import com.beehyv.parent.keycloakSecurity.KeycloakInfo;
@@ -27,6 +30,10 @@ public class ImmudbServiceImpl implements ImmudbService{
 
     @Value("${immudb.url}")
     private String url;
+    @Value("${service.iam.baseUrl}")
+    private String iamBaseUrl ;
+    @Value("${service.lab.baseUrl}")
+    private String labBaseUrl;
 
     @Value("${immudb.database}")
     private String database;
@@ -42,6 +49,8 @@ public class ImmudbServiceImpl implements ImmudbService{
 
     @Autowired
     private KeycloakInfo keycloakInfo;
+    @Autowired
+    private HistoryMapper historyMapper;
 
     @Autowired
     private ImmuClient client;
@@ -49,6 +58,15 @@ public class ImmudbServiceImpl implements ImmudbService{
     @PostConstruct
     public void init() {
         this.databaseInitialised = this.verifyConnectionAndInitializeDatabase(5);
+    }
+
+    public static final Map<String,String> stateMap;
+    static {
+        stateMap = new HashMap<>();
+        stateMap.put("Sample sent to Lab","lab");
+        stateMap.put("Sample in Lab","lab");
+        stateMap.put("Sample tested","lab");
+        stateMap.put("Sample Rejected","lab");
     }
 
     private boolean verifyConnectionAndInitializeDatabase(int retryCount) {
@@ -109,9 +127,9 @@ public class ImmudbServiceImpl implements ImmudbService{
         }
     }
 
-    public List<BatchEventEntity> getHistory(Long entityId, String type) {
-        SQLQueryResult result;
-        List<BatchEventEntity> list = new ArrayList<>();
+    public List<HistoryResponseDto> getHistory(Long entityId, String type) {
+       SQLQueryResult result;
+        List<HistoryResponseDto> list = new ArrayList<>();
         String tableName = "batch_event_entity";
         try {
             client.openSession(database, username, password);
@@ -133,11 +151,21 @@ public class ImmudbServiceImpl implements ImmudbService{
                     map.put(column, value);
                 }
                 BatchEventEntity batchEventEntity = convertToEntity(map);
-                list.add(batchEventEntity);
+                HistoryResponseDto historyResponseDto = new HistoryResponseDto();
+                historyResponseDto = historyMapper.mapHistoryEntityToDto(batchEventEntity);
+                if(historyResponseDto.getState().equals("Lot dispatched")){
+                    String url = fortificationBaseUrl +  "0/lot/" + entityId + "/target" ;
+                    String response = HttpUtils.callGetAPI(url, keycloakInfo.getAccessToken());
+                    ObjectMapper mapper = new ObjectMapper();
+                    mapper.registerModule(new JavaTimeModule());
+                    NameAddressResponseDto nameAddressResponseDto = mapper.readValue(response, NameAddressResponseDto.class);
+                    historyResponseDto.setTarget(nameAddressResponseDto);
+                }
+                list.add(historyResponseDto);
             }
             client.commitTransaction();
         } catch (Exception ex) {
-            log.error("Exception in fetching the history of records" , ex);
+            log.error(" Exception in fetching the history of records" , ex);
         } finally {
             client.closeSession();
         }
@@ -145,21 +173,21 @@ public class ImmudbServiceImpl implements ImmudbService{
     }
 
     @Override
-    public Map<String,List<BatchEventEntity>> getHistoryForEntities(List<Long> entityIds, String type) {
-        Map<String,List<BatchEventEntity>> map = new HashMap<>();
+    public Map<String,List<HistoryResponseDto>> getHistoryForEntities(List<Long> entityIds, String type) {
+        Map<String,List<HistoryResponseDto>> map = new HashMap<>();
         for(Long entityId : entityIds){
-            List<BatchEventEntity> list = getHistory(entityId, type);
+            List<HistoryResponseDto> list = getHistory(entityId, type);
             map.put(entityId.toString(),list);
         }
         return map;
     }
 
     @Override
-    public Map<String, List<BatchEventEntity>> getHistory(HistoryRequestDto dto) {
-        Map<String,List<BatchEventEntity>> map = new HashMap<>();
-        List<BatchEventEntity> batchList ;
-        List<BatchEventEntity> historyList;
-        List<BatchEventEntity> lotList ;
+    public Map<String, List<HistoryResponseDto>> getHistory(HistoryRequestDto dto) {
+        Map<String,List<HistoryResponseDto>> map = new HashMap<>();
+        List<HistoryResponseDto> batchList ;
+        List<HistoryResponseDto> historyList;
+        List<HistoryResponseDto> lotList ;
         if (dto.getBatchId() != null && dto.getLotId() != null){
 //            checkBatchAccess(dto.getBatchId());
             batchList = getHistory(dto.getBatchId(),"BATCH");

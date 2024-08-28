@@ -1,8 +1,8 @@
 package com.beehyv.Immudb.controller;
 
 import com.beehyv.Immudb.dto.HistoryRequestDto;
-import com.beehyv.Immudb.entity.BatchEventEntity;
 import com.beehyv.Immudb.service.ImmudbService;
+import com.beehyv.Immudb.dto.HistoryResponseDto;
 import com.beehyv.parent.exceptions.CustomException;
 import io.codenotary.immudb4j.sql.SQLException;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,7 +29,7 @@ public class HistoryController {
     @GetMapping("{type}/entity/")
     public ResponseEntity<?> getHistory(@RequestParam List<Long> entityIds, @PathVariable String type) throws SQLException {
         try{
-            Map<String,List<BatchEventEntity>> batchEventEntityListMap = immudbService.getHistoryForEntities(entityIds, type);
+            Map<String,List<HistoryResponseDto>>batchEventEntityListMap = immudbService.getHistoryForEntities(entityIds, type);
             return ResponseEntity.ok(batchEventEntityListMap);
         } catch (CustomException e){
             return ResponseEntity.noContent().build();
@@ -41,7 +41,7 @@ public class HistoryController {
     @PostMapping
     public ResponseEntity<?> getHistory(@RequestBody HistoryRequestDto dto){
         try {
-            Map<String,List<BatchEventEntity>> historyMap = immudbService.getHistory(dto);
+            Map<String,List<HistoryResponseDto>> historyMap = immudbService.getHistory(dto);
             return ResponseEntity.ok(historyMap);
         }catch (Exception ex){
             return ResponseEntity.internalServerError().body("Exception while fetching history of transactions");
