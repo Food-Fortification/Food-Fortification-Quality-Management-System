@@ -3,7 +3,6 @@
 * We can use the existing repositories to configure our implementation of DPG
 * If we want to override or add any new functionalities, we can make the changes in existing repositories or we can write wrapper applications on top of these repositories to add new functionalities
 * Using these services sample UI implementation is added to visualize these functionalities
-* Once such implementation example is added [here](https://blog.beehyv.com/digitizing-rice-fortification-process-in-india-beehyv-and-path-collaboration-05a24c2e1927).
 * Fortified Food Quality Management System (FFQMS) is used for Rice as a product
 * Rice fortification stands as a crucial measure in combating anemia and addressing micronutrient deficiencies by infusing iron, folic acid (Vitamin B6), and Vitamin B12 into its composition. This intricate process involves coordination and workflows between various stakeholders. Ensuring that fortified rice adheres to the policies and guidelines of a specific geographic region necessitates the establishment of a robust infrastructure for quality control and assurance. The paramount objective lies in instituting an airtight process to guarantee the production and distribution of fortified rice of desired quality to consumers, thus advancing the mission to alleviate chronic nutritional deficiencies.
 * Rice Fortification (FoRTrace) platform contains below categories for the product
