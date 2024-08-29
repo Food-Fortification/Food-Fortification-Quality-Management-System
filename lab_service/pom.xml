@@ -9,7 +9,7 @@
 		<relativePath/>
 	</parent>
 	<artifactId>lab</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<name>lab</name>
 	<description>Project for lab services</description>
 	<properties>
