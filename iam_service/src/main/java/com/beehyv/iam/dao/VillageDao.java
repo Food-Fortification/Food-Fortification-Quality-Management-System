@@ -31,16 +31,16 @@ public class VillageDao extends BaseDao<Village>{
 
     public Village findByDistrictNameAndVillageName(String villageName,String districtName){
 
-        Village obj = null;
-        try {
-            TypedQuery<Village> query = em
-                    .createQuery("from Village d where d.district.name = :district_name and d.name =:village_name", Village.class)
-                    .setParameter("village_name", villageName)
-                    .setParameter("district_name", districtName);
-            obj = query.getSingleResult();
-            return obj;
-        }
-        catch (NoResultException e) {
+        List<Village> obj = null;
+
+        TypedQuery<Village> query = em
+                .createQuery("from Village d where d.district.name = :district_name and d.name =:village_name", Village.class)
+                .setParameter("village_name", villageName)
+                .setParameter("district_name", districtName);
+        obj = query.getResultList();
+        if(!obj.isEmpty())
+            return obj.get(0);
+        else {
             return null;
         }
     }

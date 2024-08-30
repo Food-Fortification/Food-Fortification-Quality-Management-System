@@ -27,7 +27,7 @@ public class IamSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 .antMatchers("/user").permitAll()
                 .antMatchers("/user/*").permitAll()
                 .antMatchers("/actuator/health").permitAll()
-                .antMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
+                .antMatchers("/swagger-ui/**","/v3/api-docs/**","/user/storage/get-meta-file").permitAll()
                 .anyRequest()
                 .authenticated();
         http.cors().and().csrf().disable();

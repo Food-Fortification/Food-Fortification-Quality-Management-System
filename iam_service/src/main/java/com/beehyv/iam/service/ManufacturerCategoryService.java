@@ -23,10 +23,15 @@ public class ManufacturerCategoryService {
     private final BaseMapper<ManufacturerCategoryResponseDto, ManufacturerCategoryRequestDto,ManufacturerCategory> manufacturerCategoryMapper = BaseMapper.getForClass(ManufacturerCategoryMapper.class);
 
     public void create(ManufacturerCategoryRequestDto manufacturerCategoryRequestDto){
-        manufacturerCategoryManager.create(manufacturerCategoryMapper.toEntity(manufacturerCategoryRequestDto));
+        ManufacturerCategory entity = manufacturerCategoryMapper.toEntity(manufacturerCategoryRequestDto);
+        entity.setAction(manufacturerCategoryRequestDto.getAction());
+        manufacturerCategoryManager.create(entity);
     }
     public void update(ManufacturerCategoryRequestDto manufacturerCategoryRequestDto){
-        manufacturerCategoryManager.update(manufacturerCategoryMapper.toEntity(manufacturerCategoryRequestDto));
+        ManufacturerCategory entity = manufacturerCategoryMapper.toEntity(manufacturerCategoryRequestDto);
+        entity.setAction(manufacturerCategoryRequestDto.getAction());
+        entity.setIsDeleted(false);
+        manufacturerCategoryManager.update(entity);
     }
     public ManufacturerCategoryResponseDto getById(Long id){
         ManufacturerCategory manufacturerCategory = manufacturerCategoryManager.findById(id);

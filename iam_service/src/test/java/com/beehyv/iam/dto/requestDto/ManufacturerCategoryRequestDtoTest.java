@@ -1,5 +1,6 @@
 package com.beehyv.iam.dto.requestDto;
 
+import com.beehyv.iam.enums.ManufacturerCategoryAction;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,7 +19,7 @@ public class ManufacturerCategoryRequestDtoTest {
 
     @Test
     public void testAllArgsConstructor() {
-        ManufacturerCategoryRequestDto dto = new ManufacturerCategoryRequestDto(1L, 2L, true, 3L, false);
+        ManufacturerCategoryRequestDto dto = new ManufacturerCategoryRequestDto(1L, 2L, true, 3L, false, ManufacturerCategoryAction.CREATION);
         assertEquals(1L, dto.getId());
         assertEquals(2L, dto.getCategoryId());
         assertTrue(dto.getCanSkipRawMaterials());
@@ -44,9 +45,9 @@ public class ManufacturerCategoryRequestDtoTest {
 
     @Test
     public void testEqualsAndHashCode() {
-        ManufacturerCategoryRequestDto dto1 = new ManufacturerCategoryRequestDto(1L, 2L, true, 3L, false);
-        ManufacturerCategoryRequestDto dto2 = new ManufacturerCategoryRequestDto(1L, 2L, true, 3L, false);
-        ManufacturerCategoryRequestDto dto3 = new ManufacturerCategoryRequestDto(4L, 5L, false, 6L, true);
+        ManufacturerCategoryRequestDto dto1 = new ManufacturerCategoryRequestDto(1L, 2L, true, 3L, false, ManufacturerCategoryAction.CREATION);
+        ManufacturerCategoryRequestDto dto2 = new ManufacturerCategoryRequestDto(1L, 2L, true, 3L, false, ManufacturerCategoryAction.CREATION);
+        ManufacturerCategoryRequestDto dto3 = new ManufacturerCategoryRequestDto(4L, 5L, false, 6L, true, ManufacturerCategoryAction.CREATION);
 
         assertNotEquals(dto1, dto3);
         assertNotEquals(dto1.hashCode(), dto3.hashCode());

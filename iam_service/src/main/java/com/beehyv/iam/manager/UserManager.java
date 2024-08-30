@@ -92,5 +92,8 @@ public class UserManager extends BaseManager<User, UserDao> {
         dao.deleteRegistrationToken(registrationToken);
     }
 
+    public List<User> findallByManufacturersIds(List<Long> manufacturerIds){
+        return dao.findallByManufacturerIds(manufacturerIds);
+    }
 
 }

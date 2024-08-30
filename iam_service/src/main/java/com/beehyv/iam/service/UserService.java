@@ -118,6 +118,7 @@ public class UserService {
         User userToSave = mapper.toEntity(userRequestDto);
         if (userToSave.getStatus() == null) userToSave.setStatus(statusManager.findByName("Active"));
         userToSave.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+        userToSave.setIsDeleted(false);
         User userCreated = userManager.create(userToSave);
         if (userRequestDto.getLabId() != null && userRequestDto.getLabId() != 0) {
             LabUsers labUsers = new LabUsers(userRequestDto.getLabId(), Collections.singleton(userCreated));

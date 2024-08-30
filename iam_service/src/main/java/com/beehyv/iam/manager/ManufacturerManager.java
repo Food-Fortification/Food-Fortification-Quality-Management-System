@@ -176,4 +176,8 @@ public class ManufacturerManager extends BaseManager<Manufacturer, ManufacturerD
     public String findLicenseNumberByName(String name){
         return dao.findLicenseNumberByName(name);
     }
+
+    public List<String> getAllManufacturerLicenseNos(){
+        return dao.getAllManufacturerLicenseNos();
+    }
 }

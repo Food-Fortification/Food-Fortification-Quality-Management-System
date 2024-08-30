@@ -1,5 +1,6 @@
 package com.beehyv.iam.dto.requestDto;
 
+import com.beehyv.iam.enums.ManufacturerCategoryAction;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,4 +16,5 @@ public class ManufacturerCategoryRequestDto extends BaseRequestDto{
     private Boolean canSkipRawMaterials;
     private Long manufacturerId;
     private Boolean isEnabled;
+    private ManufacturerCategoryAction action;
 }

@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.ws.rs.NotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -107,21 +109,41 @@ import java.util.stream.Collectors;
         List<Long> userRoleCategoryIds = new ArrayList<>();
         List<Role> dbRoles = roleManager.findByNames(rolesMap.stream().map(RoleRequestDto::getRoleName).distinct().toList());
         List<String> roles = new ArrayList<>();
+        List<UserRoleCategory> userRoleCategories = userRoleCategoryManager.findByUserId(user.getId());
         rolesMap.forEach(c-> {
-          roles.add(String.format("%s_%s_%s",c.getCategoryName(),c.getRoleName(),c.getRoleCategoryType()));
-          Long roleId = dbRoles.stream().filter(role ->Objects.equals(role.getName(),c.getRoleName())).map(Role::getId).findFirst().get();
-          Status status = statusManager.findByName("Active");
-          UserRoleCategory userRoleCategory = userRoleCategoryManager.create(new UserRoleCategory(c.getCategoryName(),new User(user.getId()),new Role(roleId),c.getRoleCategoryType(), status));
-          userRoleCategoryIds.add(userRoleCategory.getId());
+            roles.add(String.format("%s_%s_%s",c.getCategoryName(),c.getRoleName(),c.getRoleCategoryType()));
+            Long roleId = dbRoles.stream().filter(role ->Objects.equals(role.getName(),c.getRoleName())).map(Role::getId).findFirst().get();
+            Status status = statusManager.findByName("Active");
+            Optional<UserRoleCategory> matchingUserRoleCategory=  userRoleCategories.stream().filter(uc->uc.getCategory().equals(c.getCategoryName()) && uc.getUser().getId().equals(user.getId()) && uc.getRole().getId().equals(roleId)).findFirst();
+            if(!matchingUserRoleCategory.isPresent()) {
+                UserRoleCategory userRoleCategory = userRoleCategoryManager.create(new UserRoleCategory(c.getCategoryName(), new User(user.getId()), new Role(roleId), c.getRoleCategoryType(), status));
+                userRoleCategoryIds.add(userRoleCategory.getId());
+            }
+            else {
+                userRoleCategoryIds.add(matchingUserRoleCategory.get().getId());
+            }
+
         });
         log.info(roles.toString());
         UserResource userResource = getUserResourceByUserName(user.getUserName());
+
         List<RoleRepresentation> rolesToAdd = new LinkedList<>();
-        roles.forEach(c->rolesToAdd.add(getKeycloakRealmResource().roles().get(c).toRepresentation()));
+        roles.forEach(c -> {
+            try {
+                RoleRepresentation roleRepresentation = getKeycloakRealmResource().roles().get(c).toRepresentation();
+                if (roleRepresentation != null) {
+                    rolesToAdd.add(roleRepresentation);
+
+                } else {
+                    log.error("Role {} not found in Keycloak for user {}", c, user.getUserName());
+                }
+            } catch (NotFoundException e) {
+                log.error("Role {} not found in Keycloak for user {}", c, user.getUserName());
+            }
+        });
         userResource.roles().realmLevel().add(rolesToAdd);
         return userRoleCategoryIds;
     }
-
     public UserResource getUserResourceByUserName(String userName){
       RealmResource keycloakRealmResource = keycloakCustomConfig.getInstance().realm(realmResource);
       String userId = keycloakRealmResource
@@ -178,4 +200,25 @@ import java.util.stream.Collectors;
 
 
       }
+
+    public List<Long> updateUserRoles(AssignRoleRequestDto dto){
+
+        List<Long> userRoleCategoryIds = new ArrayList<>();
+        User user = userManager.findByName(dto.getUserName());
+        List<RoleRequestDto> rolesMap = dto.getRoles();
+        List<Role> dbRoles = roleManager.findByNames(rolesMap.stream().map(RoleRequestDto::getRoleName).distinct().collect(Collectors.toList()));
+        List<String> roles = new ArrayList<>();
+        List<UserRoleCategory> userRoleCategories = userRoleCategoryManager.findByUserId(user.getId());
+        Set<String> newRoleKeys = rolesMap.stream()
+                .map(c -> String.format("%s_%s_%s", c.getCategoryName(), c.getRoleName(), c.getRoleCategoryType()))
+                .collect(Collectors.toSet());
+        userRoleCategories.forEach(uc -> {
+            String roleKey = String.format("%s_%s_%s", uc.getCategory(), uc.getRole().getName(), uc.getRoleCategoryType());
+            if (!newRoleKeys.contains(roleKey)) {
+                RemoveRoleRequestDto removeRoleRequestDto = new RemoveRoleRequestDto(user.getUserName(), uc.getId());
+                removeRole(removeRoleRequestDto);
+            }
+        });
+        return assignUserRole(user,rolesMap);
+    }
   }

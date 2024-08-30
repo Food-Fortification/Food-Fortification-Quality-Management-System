@@ -145,4 +145,15 @@ public class UserDao extends BaseDao<User> {
         query.executeUpdate();
 
     }
+
+    public List<User> findallByManufacturerIds(List<Long> manufacturerIds) {
+        String hql  = "Select distinct(u) from User u " +
+                "left join UserRoleCategory urc on urc.user.id = u.id " +
+                "where u.manufacturer.id in :manufacturerIds " +
+                "AND urc.isDeleted is false";
+
+        TypedQuery<User> query = em.createQuery(hql, User.class)
+                .setParameter("manufacturerIds", manufacturerIds);
+        return query.getResultList();
+    }
 }

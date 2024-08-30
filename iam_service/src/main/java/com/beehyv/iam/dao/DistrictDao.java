@@ -63,10 +63,17 @@ public class DistrictDao extends BaseDao<District>{
     }
 
     public District findByStateNameAndDistrictName(String districtName,String stateName) {
-            return em.createQuery("from District d where d.state.name = :stateName and d.name =:districtName", District.class)
-                    .setParameter("districtName",districtName)
-                    .setParameter("stateName",stateName)
-                    .getSingleResult();
+        List<District> obj = null;
+
+        TypedQuery<District> query = em.createQuery("from District d where d.state.name = :stateName and d.name =:districtName", District.class)
+                .setParameter("districtName", districtName)
+                .setParameter("stateName", stateName);
+        obj = query.getResultList();
+        if (!obj.isEmpty())
+            return obj.get(0);
+        else {
+            return null;
+        }
     }
 
     public District findByNameAndStateId(String districtName, Long stateId){

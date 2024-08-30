@@ -193,7 +193,7 @@ public class UserRoleCategoryDao extends BaseDao<UserRoleCategory> {
 
     public List<UserRoleCategory> findByUserId(Long userId){
         try {
-            return em.createQuery("from UserRoleCategory urc where urc.user.id = :userId and (:status is null or urc.status.name in :status)", UserRoleCategory.class)
+            return em.createQuery("from UserRoleCategory urc where urc.user.id = :userId and (urc.user.status is null or urc.user.status.name in :status)", UserRoleCategory.class)
                     .setParameter("userId",userId)
                     .setParameter("status", "Active")
                     .getResultList();

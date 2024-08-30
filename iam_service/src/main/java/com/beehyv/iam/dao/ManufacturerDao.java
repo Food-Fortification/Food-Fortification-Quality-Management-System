@@ -498,6 +498,7 @@ public class ManufacturerDao extends BaseDao<Manufacturer> {
                 + "where m.manufacturerType != 2 " +
                     "AND (:search is null or m.name like :search) " +
                     "AND (:categoryIdsNull is true or mc.categoryId in (:categoryIds)) " +
+                    "AND mc.isDeleted is false " +
                     "and mc.isEnabled is true";
 
             TypedQuery<Manufacturer> query = em.createQuery(hql, Manufacturer.class);
@@ -525,6 +526,7 @@ public class ManufacturerDao extends BaseDao<Manufacturer> {
             + "where m.manufacturerType != 2 and " +
                 "(:search is null or m.name like :search) " +
                 "AND (:categoryIdsNull is true or mc.categoryId in (:categoryIds)) " +
+                "AND mc.isDeleted is false " +
                 "and mc.isEnabled is true";
         TypedQuery<Long> query = em.createQuery(hql, Long.class);
         query.setParameter("categoryIds",
@@ -802,6 +804,7 @@ public class ManufacturerDao extends BaseDao<Manufacturer> {
                     "join ManufacturerCategory mc on mc.manufacturer.id = m.id " +
                     "where mc.isEnabled is true " +
                     "and mc.categoryId = :categoryId " +
+                    "and mc.isDeleted is not true " +
                     "and m.licenseNumber = :licenseNo";
             TypedQuery<Manufacturer> query = em.createQuery(hql, Manufacturer.class)
                     .setParameter("licenseNo",licenseNo)
@@ -859,6 +862,17 @@ public class ManufacturerDao extends BaseDao<Manufacturer> {
                     .setParameter("name", name)
                     .getSingleResult();
         } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    public List<String>getAllManufacturerLicenseNos(){
+        try{
+            return em.createQuery(
+                            "SELECT m.licenseNumber from Manufacturer m " +
+                                    "where m.isDeleted is false", String.class)
+                    .getResultList();
+        }catch (NoResultException e){
             return null;
         }
     }
