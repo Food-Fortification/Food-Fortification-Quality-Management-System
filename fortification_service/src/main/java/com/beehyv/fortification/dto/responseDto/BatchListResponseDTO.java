@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.Set;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -32,4 +34,5 @@ public class BatchListResponseDTO extends BaseResponseDto{
     private Long labId;
     private String createdBy;
     private String labCertificateNumber;
+    private Set<BatchPropertyResponseDto> batchProperties;
 }

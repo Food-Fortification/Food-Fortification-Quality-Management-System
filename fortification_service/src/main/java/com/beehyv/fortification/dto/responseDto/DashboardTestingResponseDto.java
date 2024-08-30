@@ -16,6 +16,8 @@ public class DashboardTestingResponseDto extends BaseResponseDto {
     private Double batchRejected;
     private Double batchApproved;
     private Double totalDispatched;
+    private Double sampleInTransit;
+    private Double batchNotTested;
     private Long categoryId;
     private String categoryName;
     private String id;

@@ -97,6 +97,7 @@ public class BatchMapper implements Mappable<BatchResponseDto, BatchRequestDto, 
         BeanUtils.copyProperties(batch1, batch);
         BeanUtils.copyProperties(batchRequestDto, batch, "id", "uuid", "createdBy", "createdDate", "state", "uomId", "remainingQuantity", "isLabTested", "lotSequence", "batchNo", "comments", "isBlocked");
         setProperties(batchRequestDto, batch);
+        batch.getBatchProperties().add(batch1.getBatchProperties().stream().filter(batchProperty -> batchProperty.getName().equals("createdBy")).findFirst().orElse(null));
         return batch;
     }
 
@@ -165,6 +166,9 @@ public class BatchMapper implements Mappable<BatchResponseDto, BatchRequestDto, 
         entity.getBatchProperties().stream().filter(batchProperty -> batchProperty.getName().equals("batch_name"))
                 .findFirst().ifPresent(batchProperty -> batchListResponseDTO.setName(batchProperty.getValue()));
         batchListResponseDTO.setCreatedBy(null);
+        batchListResponseDTO.setBatchProperties(entity.getBatchProperties()
+                .stream().map(batchPropertyMapper::toDto)
+                .collect(Collectors.toSet()));
         entity.getBatchProperties().stream().filter(batchProperty -> batchProperty.getName().equals("createdBy"))
                 .findFirst().ifPresent(batchProperty -> batchListResponseDTO.setCreatedBy(batchProperty.getValue()));
         return batchListResponseDTO;

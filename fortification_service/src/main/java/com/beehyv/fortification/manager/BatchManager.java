@@ -6,6 +6,7 @@ import com.beehyv.fortification.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -42,8 +43,8 @@ public class BatchManager extends BaseManager<Batch, BatchDao> {
         if (set != null) set.forEach(d -> d.setUuid(UUID.randomUUID().toString()));
     }
 
-    public Long getCount(Long categoryId, Long manufacturerId, Long stateId, SearchListRequest searchRequest) {
-        return batchDao.getCount(categoryId, manufacturerId, stateId, searchRequest);
+    public Long getCount(List<String> filterByState, Long categoryId, Long manufacturerId, Long stateId, SearchListRequest searchRequest, Boolean remQuantity, Date fromDate, Date toDate) {
+        return batchDao.getCount(filterByState,categoryId, manufacturerId, stateId, searchRequest,remQuantity,fromDate,toDate);
     }
 
     public Long getCountForSuperAdmin(SearchListRequest searchRequest, List<Long> testManufacturerIds) {
@@ -51,8 +52,8 @@ public class BatchManager extends BaseManager<Batch, BatchDao> {
         return batchDao.getCountForSuperAdmin(searchRequest, categoryIds, testManufacturerIds);
     }
 
-    public List<Batch> findAllBatches(Long categoryId, Long manufacturerId, Integer pageNumber, Integer pageSize, SearchListRequest searchRequest, Boolean remQuantity) {
-        return batchDao.findAllBatches(categoryId, manufacturerId, pageNumber, pageSize, searchRequest, remQuantity);
+    public List<Batch> findAllBatches(List<String> filterByState, Date fromDate, Date toDate, Long categoryId, Long manufacturerId, Integer pageNumber, Integer pageSize, SearchListRequest searchRequest, Boolean remQuantity, Boolean isLabTested) {
+        return batchDao.findAllBatches(filterByState,fromDate,toDate,categoryId, manufacturerId, pageNumber, pageSize, searchRequest, remQuantity, isLabTested);
     }
 
     public List<Batch> findAllBatches(Integer pageNumber, Integer pageSize, SearchListRequest searchRequest, Boolean remQuantity, List<Long> testManufacturerIds) {

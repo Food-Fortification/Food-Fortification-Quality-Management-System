@@ -26,16 +26,18 @@ public class BatchDao extends BaseDao<Batch> {
         this.em = em;
     }
 
-    public List<Batch> findAllBatches(Long categoryId, Long manufacturerId, Integer pageNumber, Integer pageSize, SearchListRequest searchRequest,Boolean remQuantity) {
+    public List<Batch> findAllBatches(List<String> filterByState,Date fromDate, Date toDate, Long categoryId, Long manufacturerId, Integer pageNumber, Integer pageSize, SearchListRequest searchRequest, Boolean remQuantity, Boolean isLabTested) {
         List<Batch> obj = null;
         String hql = "SELECT distinct(b) FROM Batch as b " +
                 "left join BatchProperty bp on bp.batch.id = b.id " +
                 "WHERE (:categoryId is 0L or b.category.id = :categoryId) AND " +
                 "b.manufacturerId = :manufacturerId " +
+                "AND (:noFilter is true or b.state.name in :filterByState) " +
                 "AND (:remQuantity is null or b.remainingQuantity > :remQuantity) " +
                 "AND (:stateIdsNull is true or b.state.id in (:stateIds)) " +
                 "AND ((:batchNo is null or b.batchNo like :batchNo) or " +
                 "(:manufacture_batchNumber is null or (bp.name = :batchPropertyName and bp.value like :manufacture_batchNumber))) " +
+                "AND (:isLabTestedIsNull is true or b.isLabTested = :isLabTested) " +
                 "AND (:mfdStart is null or b.dateOfManufacture >= :mfdStart) " +
                 "AND (:mfdEnd is null or b.dateOfManufacture <= :mfdEnd) " +
                 "AND (:expStart is null or b.dateOfExpiry >= :expStart) " +
@@ -43,6 +45,10 @@ public class BatchDao extends BaseDao<Batch> {
                 + " order by b.id asc";
         TypedQuery<Batch> query = em.createQuery(hql, Batch.class)
                 .setParameter("categoryId", categoryId)
+                .setParameter("noFilter",filterByState.isEmpty())
+                .setParameter("isLabTestedIsNull", isLabTested == null)
+                .setParameter("isLabTested",isLabTested)
+                .setParameter("filterByState",filterByState)
                 .setParameter("manufacturerId", manufacturerId);
         if (remQuantity){
             query.setParameter("remQuantity",0d);
@@ -50,6 +56,10 @@ public class BatchDao extends BaseDao<Batch> {
             query.setParameter("remQuantity",null);
         }
         this.setSearchParams(query, searchRequest);
+        if(fromDate != null)
+            query.setParameter("mfdStart", fromDate);
+        if(toDate!=null)
+            query.setParameter("mfdEnd",toDate);
         if(pageSize != null && pageNumber != null) {
             query.setFirstResult((pageNumber-1) * pageSize);
             query.setMaxResults(pageSize);
@@ -58,13 +68,15 @@ public class BatchDao extends BaseDao<Batch> {
         return obj;
     }
 
-    public Long getCount(Long categoryId, Long manufacturerId, Long stateId, SearchListRequest searchRequest) {
+    public Long getCount(List<String>filterByState,Long categoryId, Long manufacturerId, Long stateId, SearchListRequest searchRequest, Boolean remQuantity, Date fromDate, Date toDate) {
         String hql = "select count (distinct(b.id)) from Batch as b " +
                 "left join BatchProperty bp on bp.batch.id = b.id " +
                 "WHERE (:categoryId is 0L or b.category.id = :categoryId) AND " +
                 "b.manufacturerId = :manufacturerId " +
                 "AND (:stateId is null or b.state.id = :stateId) " +
                 "AND (:stateIdsNull is true or b.state.id in (:stateIds)) " +
+                "AND (:remQuantity is null or b.remainingQuantity > :remQuantity) " +
+                "AND (:noFilter is true or b.state.name in :filterByState) " +
                 "AND ((:batchNo is null or b.batchNo like :batchNo) or " +
                 "(:manufacture_batchNumber is null or (bp.name = :batchPropertyName and bp.value like :manufacture_batchNumber))) " +
                 "AND (:mfdStart is null or b.dateOfManufacture >= :mfdStart) " +
@@ -73,8 +85,19 @@ public class BatchDao extends BaseDao<Batch> {
                 "AND (:expEnd is null or b.dateOfExpiry <= :expEnd) ";
         TypedQuery<Long> query = em.createQuery(hql, Long.class)
                 .setParameter("stateId", stateId)
+                .setParameter("noFilter",filterByState.isEmpty())
+                .setParameter("filterByState",filterByState)
                 .setParameter("manufacturerId", manufacturerId)
                 .setParameter("categoryId",categoryId);
+        if (remQuantity){
+            query.setParameter("remQuantity",0d);
+        }else {
+            query.setParameter("remQuantity",null);
+        }
+        if(fromDate != null)
+            query.setParameter("mfdStart", fromDate);
+        if(toDate!=null)
+            query.setParameter("mfdEnd",toDate);
         this.setSearchParams(query, searchRequest);
         return query.getSingleResult();
     }

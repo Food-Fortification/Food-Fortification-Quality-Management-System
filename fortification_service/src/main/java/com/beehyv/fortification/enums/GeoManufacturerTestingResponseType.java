@@ -7,5 +7,8 @@ public enum GeoManufacturerTestingResponseType {
     lotRejected,              //setLotRejected
     transitQuantity ,         // b.inTransitQuantity  + b.receivedQuantity, //setLotInTransit
     availableTested,          //setAvailableTested
-    batchTestRejectedQuantity //setBatchRejected
+    batchTestRejectedQuantity, //setBatchRejected
+    sampleInTransit,
+    batchTestApprovedQuantity,  //setBatchApproved
+    batchNotTestedQuantity
 }

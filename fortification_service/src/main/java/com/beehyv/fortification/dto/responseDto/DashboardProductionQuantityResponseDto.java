@@ -16,4 +16,5 @@ public class DashboardProductionQuantityResponseDto extends BaseResponseDto{
     private String districtName;
     private String stateName;
     private String licenseNo;
+    private Long numberOfBatches;
 }

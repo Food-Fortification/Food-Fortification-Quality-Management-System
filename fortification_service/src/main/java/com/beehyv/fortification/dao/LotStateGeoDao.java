@@ -3,6 +3,7 @@ package com.beehyv.fortification.dao;
 import com.beehyv.fortification.dto.requestDto.DashboardRequestDto;
 import com.beehyv.fortification.entity.GeoStateId;
 import com.beehyv.fortification.entity.LotStateGeo;
+import com.beehyv.fortification.enums.GeoManufacturerProductionResponseType;
 import com.beehyv.fortification.enums.ManufacturerCategoryAction;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,33 @@ public class LotStateGeoDao extends BaseDao<LotStateGeo>{
         return em.createQuery("FROM LotStateGeo t WHERE t.geoStateId = :geoStateId", LotStateGeo.class)
                 .setParameter("geoStateId", geoStateId)
                 .getSingleResult();
+    }
+
+    public Double getUsedQuantityProductionSum(List<Long>testManufacturerIds, DashboardRequestDto dto, List<Long> manufacturerIds){
+        TypedQuery<Double>query = em.createQuery
+                        ("select " +
+                                "sum(l.totalQuantity-l.remainingQuantity-" +
+                                "(COALESCE(w.wastageQuantity, 0) * COALESCE(u.conversionFactorKg, 1))" +
+                                ")" +
+                                " as usedQuantity " +
+                                "from Lot l " +
+                                "left join Wastage w on l.id=w.lot.id " +
+                                "left join UOM u on w.uom.id = u.id " +
+                                "where (l.category.id = :categoryId) " +
+                                "and (:manufacturerIdsNull is true or l.manufacturerId in :manufacturerIds) " +
+                                "AND (l.dateOfDispatch >= :fromDate and l.dateOfDispatch <= :toDate) " +
+                                "AND (:testManufacturerIdsNull is true or l.manufacturerId not in :testManufacturerIds) " +
+                                "AND l.action = :action",Double.class)
+                .setParameter("categoryId", dto.getCategoryId())
+                .setParameter("manufacturerIds", manufacturerIds)
+                .setParameter("manufacturerIdsNull", manufacturerIds==null)
+                .setParameter("testManufacturerIds", testManufacturerIds)
+                .setParameter("action", ManufacturerCategoryAction.CREATION)
+                .setParameter("testManufacturerIdsNull", testManufacturerIds.size() <= 0)
+                .setParameter("fromDate", dto.getFromDate())
+                .setParameter("toDate", dto.getToDate());
+        Double object = query.getSingleResult();
+        return object;
     }
 
     public List<Object[]> findByCategoryIdsAndManufacturerId(Set<Long> categoryIds, Long manufacturerId) {
@@ -131,4 +159,64 @@ public class LotStateGeoDao extends BaseDao<LotStateGeo>{
         return  query.getResultList();
     }
 
+    public List<Object[]> getGeoAggregatedUsedQuantity(GeoManufacturerProductionResponseType responseType, List<Long> testManufacturerIds, DashboardRequestDto dto) {
+        String column = "sum(l.totalQuantity-l.remainingQuantity-" +
+                "(COALESCE(w.wastageQuantity, 0) * COALESCE(u.conversionFactorKg, 1)))";
+
+        TypedQuery<Object[]> query = em.createQuery(
+                        "select " +
+                                "l.targetManufacturerId, " +
+                                "l.targetDistrictGeoId, " +
+                                "l.targetStateGeoId, " +
+                                column +
+                                " from Lot as l " +
+                                "left join Wastage w on l.id=w.lot.id " +
+                                "left join UOM u on w.uom.id = u.id " +
+                                "where (l.category.id = :categoryId) " +
+                                "AND l.action = :action " +
+                                "AND (l.dateOfDispatch >= :fromDate and l.dateOfDispatch <= :toDate) " +
+                                "and (:testManufacturerIdsNull is true or l.manufacturerId NOT IN (:testManufacturerIds)) " +
+                                "group by l.targetManufacturerId " +
+                                "HAVING " + column+ "<>0", Object[].class)
+                .setParameter("categoryId", dto.getCategoryId())
+                .setParameter("testManufacturerIds", testManufacturerIds)
+                .setParameter("testManufacturerIdsNull", testManufacturerIds.size() <= 0)
+                .setParameter("fromDate", dto.getFromDate())
+                .setParameter("action",ManufacturerCategoryAction.CREATION)
+                .setParameter("toDate", dto.getToDate());
+
+        return query.getResultList();
+    }
+
+    public  List<Object[]> getUsedQuantityProductionSumByCategory(String filterByUsed,String groupByUsed,List<Long> testManufacturerIds, DashboardRequestDto dto, List<Long> manufacturerIds){
+        TypedQuery<Object[]>query = em.createQuery
+                        ("SELECT l." + groupByUsed + ", " +
+                                "sum(l.totalQuantity-l.remainingQuantity-" +
+                                "(COALESCE(w.wastageQuantity, 0) * COALESCE(u.conversionFactorKg, 1))" +
+                                ")" +
+                                " as usedQuantity " +
+                                "from Lot l " +
+                                "left join Wastage w on l.id=w.lot.id " +
+                                "left join UOM u on w.uom.id = u.id " +
+                                "WHERE l.category.id = :categoryId " +
+                                "AND (:manufacturerIdsNull IS TRUE OR l.manufacturerId IN :manufacturerIds) " +
+                                "AND l.dateOfDispatch >= :fromDate AND l.dateOfDispatch <= :toDate " +
+                                "AND (:testManufacturerIdsNull IS TRUE OR l.manufacturerId NOT IN :testManufacturerIds) " +
+                                "AND l.action = :action " +
+                                "AND (:filterBy IS NULL OR l.sourceStateGeoId = :sourceStateGeoId) " +
+                                "GROUP BY l." + groupByUsed + " " +
+                                "ORDER BY l." + groupByUsed ,Object[].class)
+                .setParameter("categoryId", dto.getCategoryId())
+                .setParameter("manufacturerIds", manufacturerIds)
+                .setParameter("manufacturerIdsNull", manufacturerIds==null)
+                .setParameter("testManufacturerIds", testManufacturerIds)
+                .setParameter("filterBy",filterByUsed)
+                .setParameter("sourceStateGeoId",dto.getGeoId())
+                .setParameter("action", ManufacturerCategoryAction.CREATION)
+                .setParameter("testManufacturerIdsNull", testManufacturerIds.size() <= 0)
+                .setParameter("fromDate", dto.getFromDate())
+                .setParameter("toDate", dto.getToDate());
+        List<Object[]> object = query.getResultList();
+        return object;
+    }
 }

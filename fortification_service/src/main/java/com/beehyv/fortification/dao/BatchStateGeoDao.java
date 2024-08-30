@@ -1,10 +1,7 @@
 package com.beehyv.fortification.dao;
 
 import com.beehyv.fortification.dto.requestDto.DashboardRequestDto;
-import com.beehyv.fortification.dto.responseDto.DashboardProductionResponseDto;
-import com.beehyv.fortification.dto.responseDto.DashboardTestingResponseDto;
-import com.beehyv.fortification.dto.responseDto.ProductionResponseDto;
-import com.beehyv.fortification.dto.responseDto.TestingResponseDto;
+import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.entity.BatchStateGeo;
 import com.beehyv.fortification.entity.GeoStateId;
 import com.beehyv.fortification.enums.GeoManufacturerProductionResponseType;
@@ -592,13 +589,59 @@ public class BatchStateGeoDao extends BaseDao<BatchStateGeo> {
         return  query.getResultList();
     }
 
+    public Long getNumberOfBatches(String filterBy, List<Long>testManufacturerIds, DashboardRequestDto dto, List<Long> manufacturerIds){
+        TypedQuery<Long>query = em.createQuery("select " +
+                        "count(b) as noOfBatches " +
+                        "from Batch b " +
+                        "where (b.category.id = :categoryId) " +
+                        "and (:manufacturerIdsNull is true or b.manufacturerId in :manufacturerIds) " +
+                        "AND (b.dateOfManufacture >= :fromDate and b.dateOfManufacture <= :toDate) " +
+                        "AND (:testManufacturerIdsNull is true or b.manufacturerId not in :testManufacturerIds) " +
+                        "AND b.isDeleted is false ",Long.class)
+                .setParameter("categoryId", dto.getCategoryId())
+                .setParameter("manufacturerIds", manufacturerIds)
+                .setParameter("manufacturerIdsNull", manufacturerIds==null)
+                .setParameter("testManufacturerIds", testManufacturerIds)
+                .setParameter("testManufacturerIdsNull", testManufacturerIds.size() <= 0)
+                .setParameter("fromDate", dto.getFromDate())
+                .setParameter("toDate", dto.getToDate());
+        return query.getSingleResult();
+    }
+
+    public Long getFilteredNumberOfBatches(List<String> filterBy, List<Long>testManufacturerIds, DashboardRequestDto dto, List<Long> manufacturerIds, Boolean isLabTested){
+        TypedQuery<Long>query = em.createQuery("select " +
+                        "count(b) as noOfBatches " +
+                        "from Batch b " +
+                        "where (b.category.id = :categoryId) " +
+                        "and (:manufacturerIdsNull is true or b.manufacturerId in :manufacturerIds) " +
+                        "AND (b.dateOfManufacture >= :fromDate and b.dateOfManufacture <= :toDate) " +
+                        "AND (:testManufacturerIdsNull is true or b.manufacturerId not in :testManufacturerIds) " +
+                        "AND (:isLabTestedIsNull is true or b.isLabTested is :isLabTested) " +
+                        "AND b.state.name in :filterBy " +
+                        "AND b.isDeleted is false ",Long.class)
+                .setParameter("categoryId", dto.getCategoryId())
+                .setParameter("manufacturerIds", manufacturerIds)
+                .setParameter("isLabTestedIsNull", isLabTested==null)
+                .setParameter("isLabTested", isLabTested)
+                .setParameter("manufacturerIdsNull", manufacturerIds==null)
+                .setParameter("filterBy", filterBy)
+                .setParameter("testManufacturerIds", testManufacturerIds)
+                .setParameter("testManufacturerIdsNull", testManufacturerIds.size() <= 0)
+                .setParameter("fromDate", dto.getFromDate())
+                .setParameter("toDate", dto.getToDate());
+        return query.getSingleResult();
+    }
     public Double[] getGeoAggregatedProductionSum(String filterBy, List<Long> testManufacturerIds, DashboardRequestDto dto, List<Long> manufacturerIds) {
         TypedQuery<Object[]> query = em.createQuery(
                         "select " +
                                 "sum(b.producedQuantity + b.inProductionQuantity) as totalProduction, " +
                                 "sum(b.approvedQuantity) as approvedQuantity, " +
-                                "sum(b.availableTested) as availableTested, " +
-                                "sum(b.availableNotTested) as availableNotTested " +
+                                "sum(b.availableTested)+sum(b.availableNotTested), " +
+                                "sum(b.availableNotTested) as availableNotTested, " +
+                                "sum(b.dispatchedNotTested + b.dispatchedTested) as totalDispatched, " +
+                                "sum(b.approvedQuantity) as lotApproved, " +
+                                "sum(b.lotRejected) as lotRejected, " +
+                                "sum(b.inTransitQuantity) as lotInTransit " +
                                 "from BatchStateGeo b " +
                                 "where (b.geoStateId.categoryId = :categoryId) " +
                                 "and (:manufacturerIdsNull is true or b.geoStateId.manufacturerId in :manufacturerIds) " +
@@ -617,29 +660,39 @@ public class BatchStateGeoDao extends BaseDao<BatchStateGeo> {
                 .setParameter("toDate", dto.getToDate());
 
         Object[] object = query.getSingleResult();
-        Double[] results = new Double[4];
+        Double[] results = new Double[8];
         results[0] = (Double) (((Object[]) object)[0]);
         results[1] = (Double) (((Object[]) object)[1]);
         results[2] = (Double) (((Object[]) object)[2]);
         results[3] = (Double) (((Object[]) object)[3]);
+        results[4] = (Double) (((Object[]) object)[4]);
+        results[5] = (Double) (((Object[]) object)[5]);
+        results[6] = (Double) (((Object[]) object)[6]);
+        results[7] = (Double) (((Object[]) object)[7]);
+
         return results;
     }
 
-    public List<DashboardProductionResponseDto> getGeoAggregatedProductionSumForCategory(String filterBy, String groupBy, List<Long> testManufacturerIds, DashboardRequestDto dto) {
+    public List<NewDashboardProductionResponseDto> getGeoAggregatedProductionSumForCategory(String filterBy, String groupBy, List<Long> testManufacturerIds, DashboardRequestDto dto) {
         TypedQuery<Object[]> query = em.createQuery(
                         "select " +
                                 "b." + groupBy + ", " +
                                 "sum(b.producedQuantity + b.inProductionQuantity) as totalProduction, " +
                                 "sum(b.approvedQuantity) as approvedQuantity, " +
-                                "sum(b.availableTested) as availableTested, " +
-                                "sum(b.availableNotTested) as availableNotTested " +
+                                "sum(b.availableTested)+sum(b.availableNotTested), " +
+                                "sum(b.availableNotTested) as availableNotTested, " +
+                                "sum(b.dispatchedNotTested + b.dispatchedTested) as totalDispatched, " +
+                                "sum(b.approvedQuantity) as lotApproved, " +
+                                "sum(b.lotRejected) as lotRejected, " +
+                                "sum(b.inTransitQuantity) as lotInTransit " +
                                 "from BatchStateGeo b " +
                                 "where (b.geoStateId.categoryId = :categoryId) " +
                                 "AND (b.geoStateId.producedDate >= :fromDate and b.geoStateId.producedDate <= :toDate) " +
                                 "and (:filterBy is null or b."
                                 + Optional.ofNullable(filterBy).orElse("countryGeoId") + " = :geoId) " +
                                 "and (:testManufacturerIdsNull is true or b.geoStateId.manufacturerId NOT IN (:testManufacturerIds)) " +
-                                "group by b." + groupBy, Object[].class)
+                                "group by b." + groupBy +" "+
+                                "ORDER BY " +groupBy, Object[].class)
                 .setParameter("categoryId", dto.getCategoryId())
                 .setParameter("filterBy", filterBy)
                 .setParameter("geoId", dto.getGeoId())
@@ -650,12 +703,17 @@ public class BatchStateGeoDao extends BaseDao<BatchStateGeo> {
 
         List<Object[]> objects = query.getResultList();
         return objects.stream().map(res -> {
-            DashboardProductionResponseDto responseDto = new DashboardProductionResponseDto();
+            NewDashboardProductionResponseDto responseDto = new NewDashboardProductionResponseDto();
             responseDto.setId((String) res[0]);
             responseDto.setTotalProduction((Double) res[1]);
             responseDto.setApprovedQuantity((Double) res[2]);
             responseDto.setAvailableTested((Double) res[3]);
             responseDto.setAvailableNotTested((Double) res[4]);
+            responseDto.setTotalDispatched((Double) res[5]);
+            responseDto.setLotApproved((Double) res[6]);
+            responseDto.setLotRejected((Double) res[7]);
+            responseDto.setLotInTransit((Double) res[8]);
+            responseDto.setUsedQuantity(0D);
             responseDto.setCategoryId(dto.getCategoryId());
             return responseDto;
         }).toList();
@@ -671,7 +729,9 @@ public class BatchStateGeoDao extends BaseDao<BatchStateGeo> {
                                 "sum(b.availableTested), " +
                                 "sum(b.batchTestRejectedQuantity), " +
                                 "sum(b.batchTestApprovedQuantity), " +
-                                "sum(b.inTransitQuantity  + b.receivedQuantity) " +
+                                "sum(b.inTransitQuantity  + b.receivedQuantity), " +
+                                "sum(b.batchSampleInTransitQuantity), " +
+                                "sum(b.inProductionQuantity + b.producedQuantity - b.batchTestedQuantity) " +
                                 "from BatchStateGeo b " +
                                 "where (b.geoStateId.categoryId = :categoryId) " +
                                 "AND (b.geoStateId.producedDate >= :fromDate and b.geoStateId.producedDate <= :toDate) " +
@@ -687,7 +747,7 @@ public class BatchStateGeoDao extends BaseDao<BatchStateGeo> {
                 .setParameter("toDate", dto.getToDate());
 
         Object[] object = query.getSingleResult();
-        Double[] results = new Double[8];
+        Double[] results = new Double[10];
         results[0] = (Double) (((Object[]) object)[0]);
         results[1] = (Double) (((Object[]) object)[1]);
         results[2] = (Double) (((Object[]) object)[2]);
@@ -696,6 +756,8 @@ public class BatchStateGeoDao extends BaseDao<BatchStateGeo> {
         results[5] = (Double) (((Object[]) object)[5]);
         results[6] = (Double) (((Object[]) object)[6]);
         results[7] = (Double) (((Object[]) object)[7]);
+        results[8] = (Double) (((Object[]) object)[8]);
+        results[9] = (Double) (((Object[]) object)[9]);
         return results;
     }
 
@@ -704,11 +766,10 @@ public class BatchStateGeoDao extends BaseDao<BatchStateGeo> {
                         "select " +
                                 "b." + groupBy + ", " +
                                 "sum(b.batchTestedQuantity), " +
-                                "sum(b.lotTestApprovedQuantity), " +
-                                "sum(b.lotTestRejectedQuantity), " +
-                                "sum(b.inTransitQuantity), " +
-                                "sum(b.availableTested), " +
-                                "sum(b.batchTestRejectedQuantity) " +
+                                "sum(b.batchTestRejectedQuantity), " +
+                                "sum(b.batchTestApprovedQuantity), " +
+                                "sum(b.batchSampleInTransitQuantity), " +
+                                "sum(b.inProductionQuantity + b.producedQuantity - b.batchTestedQuantity) " +
                                 "from BatchStateGeo b " +
                                 "where (b.geoStateId.categoryId = :categoryId) " +
                                 "AND (b.geoStateId.producedDate >= :fromDate and b.geoStateId.producedDate <= :toDate) " +
@@ -730,20 +791,32 @@ public class BatchStateGeoDao extends BaseDao<BatchStateGeo> {
             DashboardTestingResponseDto responseDto = new DashboardTestingResponseDto();
             responseDto.setId((String) res[0]);
             responseDto.setBatchTested((Double) res[1]);
-            responseDto.setLotApproved((Double) res[2]);
-            responseDto.setLotRejected((Double) res[3]);
-            responseDto.setLotInTransit((Double) res[4]);
-            responseDto.setAvailableTested((Double) res[5]);
-            responseDto.setBatchRejected((Double) res[6]);
+            responseDto.setBatchRejected((Double) res[2]);
+            responseDto.setBatchApproved((Double) res[3]);
+            responseDto.setSampleInTransit((Double) res[4]);
+            responseDto.setBatchNotTested((Double) res[5]);
             responseDto.setCategoryId(dto.getCategoryId());
             return responseDto;
         }).toList();
     }
 
     public List<Object[]> getGeoAggregatedProductionQuantity(String filterBy, GeoManufacturerProductionResponseType responseType, List<Long> testManufacturerIds, DashboardRequestDto dto) {
-        String column = "sum(b." + responseType + ")";
-        if(responseType.equals(GeoManufacturerProductionResponseType.totalProduction)){
-            column = "sum(b.producedQuantity + b.inProductionQuantity)";
+        String column;
+        switch (responseType) {
+            case totalProduction:
+                column = "sum(b.producedQuantity + b.inProductionQuantity)";
+                break;
+            case lotRejected:
+                column = "sum(b.lotRejected)";
+                break;
+            case transitQuantity:
+                column = "sum(b.inTransitQuantity)";
+                break;
+            case availableTested:
+                column = "sum(b.availableTested + b.availableNotTested)";
+                break;
+            default:
+                column = "sum(b." + responseType + ")";
         }
         TypedQuery<Object[]> query = em.createQuery(
                         "select " +
@@ -772,15 +845,10 @@ public class BatchStateGeoDao extends BaseDao<BatchStateGeo> {
 
     public List<Object[]> getGeoAggregatedTestingQuantity(String filterBy, GeoManufacturerTestingResponseType responseType, List<Long> testManufacturerIds, DashboardRequestDto dto) {
         String column = "sum(b." + responseType + ")";
-        if(responseType.equals(GeoManufacturerTestingResponseType.approvedQuantity)){
-            column = "sum(b.lotTestApprovedQuantity)";
-        }
-        if(responseType.equals(GeoManufacturerTestingResponseType.lotRejected)){
-            column = "sum(b.lotTestRejectedQuantity)";
-        }
-        if(responseType.equals(GeoManufacturerTestingResponseType.transitQuantity)){
-            column = "sum(b.inTransitQuantity)";
-        }
+        if(responseType.equals(GeoManufacturerTestingResponseType.sampleInTransit))
+            column = "sum(b.batchSampleInTransitQuantity)";
+        if(responseType.equals(GeoManufacturerTestingResponseType.batchNotTestedQuantity))
+            column = "sum(b.totalQuantity - b.batchTestedQuantity) ";
         TypedQuery<Object[]> query = em.createQuery(
                         "select " +
                                 "b.geoStateId.manufacturerId, " +

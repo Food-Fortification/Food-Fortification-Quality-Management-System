@@ -22,10 +22,12 @@ public class BatchPropertyDao extends BaseDao<BatchProperty> {
     }
     public List<Batch> searchBatches(String search){
         String hql = "SELECT Distinct(bp.batch) FROM BatchProperty as bp " +
-                "WHERE (bp.name = :property AND bp.value like :search) OR " +
-                "bp.batch.batchNo like :search";
+                "WHERE ((bp.name = :property AND bp.value like :search) OR " +
+                "bp.batch.batchNo like :search) " +
+                "AND bp.batch.category.independentBatch = :independentBatch";
         TypedQuery<Batch> query = em.createQuery(hql, Batch.class)
                 .setParameter("search", "%" + search + "%")
+                .setParameter("independentBatch",false)
                 .setParameter("property", "manufacture_batchNumber");
         List<Batch> result = null;
         try {

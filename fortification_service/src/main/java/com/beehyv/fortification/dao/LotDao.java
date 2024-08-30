@@ -39,7 +39,7 @@ public class LotDao extends BaseDao<Lot> {
                     || lot.getTargetBatchMapping().stream()
                     .map(BatchLotMapping::getSourceLot)
                     .anyMatch(s -> (Objects.equals(s.getManufacturerId(), manufacturerId) || Objects.equals(s.getTargetManufacturerId(), manufacturerId)))
-                    || lot.getSourceBatchMapping().stream().map(BatchLotMapping::getTargetLot)
+                    || lot.getSourceBatchMapping().stream().map(BatchLotMapping::getTargetLot).filter(Objects::nonNull)
                     .anyMatch(t -> (Objects.equals(t.getManufacturerId(), manufacturerId) || Objects.equals(t.getTargetManufacturerId(), manufacturerId)));
             if (access) return lot;
             throw new CustomException("Access Denied", HttpStatus.BAD_REQUEST);
@@ -207,6 +207,37 @@ public class LotDao extends BaseDao<Lot> {
             query.setParameter("lotStateNull", false);
         }
         return query.getSingleResult();
+    }
+
+    public List<Object[]> findPremixDispatchedToFrk(Long categoryId, DashboardRequestDto dto, Long sourceManufacturerId, List<Long> targetManufacturerIds, List<String> lotApprovalPendingStates, List<Long> testManufacturerIds, List<String> lotRejectedStates){
+        return em.createQuery(
+                        "Select l.manufacturerId, " +
+                                "sum(case when l.state.name = 'approved' then (l.totalQuantity * l.uom.conversionFactorKg) else 0D end), " +
+                                "sum(case when l.state.name in :lotRejectedStates then (l.totalQuantity * l.uom.conversionFactorKg) else 0D end), " +
+                                "sum(case when l.state.name in :lotApprovalPendingStates then (l.totalQuantity * l.uom.conversionFactorKg) else 0D end), " +
+                                "sum(case when l.state.name = 'approved' then (l.remainingQuantity * l.uom.conversionFactorKg) else 0D end) " +
+                                "from Lot l " +
+                                "where l.category.id = :categoryId " +
+                                "and l.targetManufacturerId = :sourceManufacturerId " +
+                                "and (:targetManufacturerIdsNull is true or l.targetManufacturerId in :targetManufacturerIds) " +
+                                "and (:targetDistrictGeoId is null or l.targetDistrictGeoId = :targetDistrictGeoId) " +
+                                "and (:targetStateGeoId is null or l.targetStateGeoId = :targetStateGeoId) " +
+                                "and (:testManufacturerIdsNull is true or l.manufacturerId not in :testManufacturerIds) " +
+                                "and (l.dateOfDispatch >= :fromDate and l.dateOfDispatch <= :toDate) " +
+                                "group by l.targetManufacturerId", Object[].class)
+                .setParameter("categoryId", categoryId)
+                .setParameter("fromDate", dto.getFromDate())
+                .setParameter("targetDistrictGeoId", dto.getTargetDistrictGeoId())
+                .setParameter("targetStateGeoId", dto.getTargetStateGeoId())
+                .setParameter("sourceManufacturerId", sourceManufacturerId)
+                .setParameter("testManufacturerIds", testManufacturerIds)
+                .setParameter("lotRejectedStates", lotRejectedStates)
+                .setParameter("targetManufacturerIds", targetManufacturerIds)
+                .setParameter("targetManufacturerIdsNull", targetManufacturerIds==null)
+                .setParameter("testManufacturerIdsNull", testManufacturerIds.isEmpty())
+                .setParameter("toDate", dto.getToDate())
+                .setParameter("lotApprovalPendingStates", lotApprovalPendingStates)
+                .getResultList();
     }
 
     private void setSearchParams(TypedQuery<?> query, SearchListRequest searchRequest, Boolean isSourceLot) {

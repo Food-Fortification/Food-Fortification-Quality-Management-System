@@ -2,10 +2,7 @@ package com.beehyv.fortification.manager;
 
 import com.beehyv.fortification.dao.BatchStateGeoDao;
 import com.beehyv.fortification.dto.requestDto.DashboardRequestDto;
-import com.beehyv.fortification.dto.responseDto.DashboardProductionResponseDto;
-import com.beehyv.fortification.dto.responseDto.DashboardTestingResponseDto;
-import com.beehyv.fortification.dto.responseDto.ProductionResponseDto;
-import com.beehyv.fortification.dto.responseDto.TestingResponseDto;
+import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.entity.BatchStateGeo;
 import com.beehyv.fortification.entity.GeoStateId;
 import com.beehyv.fortification.enums.GeoManufacturerProductionResponseType;
@@ -30,6 +27,13 @@ public class BatchStateGeoManager extends BaseManager<BatchStateGeo, BatchStateG
 
     public List<Object[]> findByCategoryIdsAndManufacturerId(List<Long> collect, Long manufacturerId, Integer year, DashboardRequestDto dto) {
         return dao.findByCategoryIdsAndManufacturerId(collect, manufacturerId, year, dto);
+    }
+
+    public Long getNumberOfBatches(String filterBy, List<Long> testManufacturerIds, DashboardRequestDto dto, List<Long> manufacturerIds){
+        return dao.getNumberOfBatches(filterBy, testManufacturerIds, dto, manufacturerIds);
+    }
+    public Long getFilteredNumberOfBatches(List<String> filterByStates, List<Long> testManufacturerIds, DashboardRequestDto dto, List<Long> manufacturerIds, Boolean isLabTested){
+        return dao.getFilteredNumberOfBatches(filterByStates,testManufacturerIds,dto,manufacturerIds, isLabTested);
     }
 
     public List<BatchStateGeo> findManufacturerQuantityByCategoryIdAndState(Long categoryId, String filterBy, String geoId,
@@ -98,7 +102,7 @@ public class BatchStateGeoManager extends BaseManager<BatchStateGeo, BatchStateG
         return dao.getGeoAggregatedProductionSum(filterBy, testManufacturerIds, dto, manufacturerIds);
     }
 
-    public List<DashboardProductionResponseDto> getGeoAggregatedProductionSumForCategory(String filterBy, String groupBy, List<Long> testManufacturerIds, DashboardRequestDto dto) {
+    public List<NewDashboardProductionResponseDto> getGeoAggregatedProductionSumForCategory(String filterBy, String groupBy, List<Long> testManufacturerIds, DashboardRequestDto dto) {
         return dao.getGeoAggregatedProductionSumForCategory(filterBy, groupBy, testManufacturerIds, dto);
     }
 

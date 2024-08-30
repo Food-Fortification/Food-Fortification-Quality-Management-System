@@ -4,10 +4,7 @@ import com.beehyv.fortification.dao.EventBodyDao;
 import com.beehyv.fortification.dto.requestDto.*;
 import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.entity.*;
-import com.beehyv.fortification.enums.ActionType;
-import com.beehyv.fortification.enums.EntityType;
-import com.beehyv.fortification.enums.EventTest;
-import com.beehyv.fortification.enums.SampleTestResult;
+import com.beehyv.fortification.enums.*;
 import com.beehyv.fortification.helper.Constants;
 import com.beehyv.fortification.helper.FunctionUtils;
 import com.beehyv.fortification.helper.IamServiceRestHelper;
@@ -351,21 +348,57 @@ public class BatchServiceImpl implements BatchService {
 
     @Override
     public ListResponse getAllBatches(Long categoryId, Integer pageNumber, Integer pageSize, SearchListRequest searchRequest) {
-        return this.getAllBatches(categoryId, pageNumber, pageSize, searchRequest, false);
+        return this.getAllBatches(null, null, null, categoryId, pageNumber, pageSize, searchRequest, false, null);
     }
 
     @Override
     public ListResponse getBatchInventory(Long categoryId, Integer pageNumber, Integer pageSize, SearchListRequest searchRequest) {
-        return this.getAllBatches(categoryId, pageNumber, pageSize, searchRequest, true);
+        return this.getAllBatches(null, null, null, categoryId, pageNumber, pageSize, searchRequest, true, null);
     }
 
-    public ListResponse getAllBatches(Long categoryId, Integer pageNumber, Integer pageSize, SearchListRequest searchRequest, Boolean remQuantity) {
-        Long manufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
-        List<Batch> batches = batchManager.findAllBatches(
-                categoryId, manufacturerId, pageNumber, pageSize, searchRequest, remQuantity);
+    public ListResponse getAllBatches(String responseType, Date fromDate,Date toDate, Long categoryId, Integer pageNumber, Integer pageSize, SearchListRequest searchRequest, Boolean remQuantity, Long manufacturerId) {
+        if(manufacturerId == null) {
+            manufacturerId = Long.parseLong(keycloakInfo.getUserInfo().getOrDefault("manufacturerId", 0).toString());
+        }List<String> filterByState = new ArrayList<>();
+        Boolean isLabTested = null;
+        if (responseType != null && !responseType.equals((GeoManufacturerProductionResponseType.totalProduction).toString())) {
+            switch (GeoManufacturerTestingResponseType.valueOf(responseType)) {
+                case batchTestedQuantity:
+                    filterByState.add("batchToDispatch");
+                    filterByState.add("rejected");
+                    filterByState.add("partiallyDispatched");
+                    filterByState.add("fullyDispatched");
+                    break;
+                case batchNotTestedQuantity:
+                    filterByState.add("created");
+                    filterByState.add("sentBatchSampleToLabTest");
+                    filterByState.add("batchSampleInLab");
+                    filterByState.add("batchSampleRejected");
+                    if(categoryManager.findCategoryNameById(categoryId).equals("MILLER")){
+                        filterByState.add("batchToDispatch");
+                        filterByState.add("partiallyDispatched");
+                        filterByState.add("fullyDispatched");
+                        isLabTested = false;
+                    }
+                    break;
+                case batchTestApprovedQuantity:
+                    filterByState.add("batchToDispatch");
+                    filterByState.add("partiallyDispatched");
+                    filterByState.add("fullyDispatched");
+                    break;
+                case batchTestRejectedQuantity:
+                    filterByState.add("rejected");
+                    break;
+                case sampleInTransit:
+                    filterByState.add("sentBatchSampleToLabTest");
+                    break;
+            }
+        }
+        List<Batch> batches = batchManager.findAllBatches(filterByState,fromDate,toDate,
+                categoryId, manufacturerId, pageNumber, pageSize, searchRequest, remQuantity, isLabTested);
         Long count = ((Integer) batches.size()).longValue();
         if (pageSize != null && pageNumber != null) {
-            count = batchManager.getCount(categoryId, manufacturerId, null, searchRequest);
+            count = batchManager.getCount(filterByState, categoryId, manufacturerId, null, searchRequest, remQuantity,fromDate,toDate);
         }
 
         ListResponse<BatchListResponseDTO> dtos = ListResponse.from(batches, batchListMapper::toListDTO, count);
@@ -374,10 +407,15 @@ public class BatchServiceImpl implements BatchService {
         dtos.getData()
                 .forEach(dto -> {
                     LabNameAddressResponseDto labNameAddressResponseDto = labNameAddressResponseDtoMap.get(dto.getId());
-                    if (labNameAddressResponseDto != null) {
+                    if(labNameAddressResponseDto !=null){
                         dto.setLabName(labNameAddressResponseDto.getName());
                         dto.setLabId(labNameAddressResponseDto.getId());
                         dto.setLabCertificateNumber(labNameAddressResponseDto.getLabCertificateNumber());
+                    }
+                    else if(dto.getBatchProperties() !=null && dto.getBatchProperties().stream().anyMatch(lotPropertyResponseDto -> lotPropertyResponseDto.getName().equals("testedAtLab"))){
+                        dto.setLabName(dto.getBatchProperties().stream().filter(lotPropertyResponseDto -> lotPropertyResponseDto.getName().equals("testedAtLab")).findFirst().get().getValue());
+                        dto.setLabCertificateNumber(dto.getBatchProperties().stream().filter(lotPropertyResponseDto -> lotPropertyResponseDto.getName().equals("testedLabTCNumber")).findFirst().get().getValue());
+                        dto.setLabId(Long.valueOf(dto.getBatchProperties().stream().filter(lotPropertyResponseDto -> lotPropertyResponseDto.getName().equals("testedLabId")).findFirst().get().getValue()));
                     }
                 });
         return dtos;

@@ -871,10 +871,16 @@ public class LotServiceImpl implements LotService {
         dtos.getData()
                 .forEach(dto -> {
                     LabNameAddressResponseDto labNameAddressResponseDto = labNameAddressResponseDtoMap.get(dto.getId());
-                    if (labNameAddressResponseDto != null) {
+                    if(labNameAddressResponseDto != null){
                         dto.setLabName(labNameAddressResponseDto.getName());
                         dto.setLabId(labNameAddressResponseDto.getId());
                         dto.setLabCertificateNumber(labNameAddressResponseDto.getLabCertificateNumber());
+                    }
+                    else if(dto.getLotProperties().stream().anyMatch(lotPropertyResponseDto -> lotPropertyResponseDto.getName().equals("testedAtLab"))){
+                        dto.setLabName(dto.getLotProperties().stream().filter(lotPropertyResponseDto -> lotPropertyResponseDto.getName().equals("testedAtLab")).findFirst().get().getValue());
+                        dto.setLabCertificateNumber(dto.getLotProperties().stream().filter(lotPropertyResponseDto -> lotPropertyResponseDto.getName().equals("testedLabTCNumber")).findFirst().get().getValue());
+                        dto.setLabId(Long.valueOf(dto.getLotProperties().stream().filter(lotPropertyResponseDto -> lotPropertyResponseDto.getName().equals("testedLabId")).findFirst().get().getValue()));
+
                     }
                 });
         return dtos;
