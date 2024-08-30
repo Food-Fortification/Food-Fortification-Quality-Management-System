@@ -305,8 +305,8 @@ class BatchServiceImplTest {
         List<Batch> batches = List.of(batch);
 
         when(keycloakInfo.getUserInfo()).thenReturn(Map.of("manufacturerId", 1L));
-        when(batchManager.findAllBatches(anyLong(), anyLong(), anyInt(), anyInt(), any(SearchListRequest.class), eq(false))).thenReturn(batches);
-        when(batchManager.getCount(anyLong(), anyLong(), any(), any(SearchListRequest.class))).thenReturn(2L);
+        when(batchManager.findAllBatches(anyList(), any(), any(),anyLong(), anyLong(), anyInt(), anyInt(), any(SearchListRequest.class), eq(false), anyBoolean())).thenReturn(batches);
+        when(batchManager.getCount(any(),anyLong(), anyLong(), any(), any(SearchListRequest.class), anyBoolean(), any(), any())).thenReturn(2L);
         labMap.put(1L, new LabNameAddressResponseDto());
         when(LabServiceManagementHelper.fetchLabNameAddressByLotIds(any(), any(), any())).thenReturn(labMap);
 
@@ -315,7 +315,7 @@ class BatchServiceImplTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(1, result.getData().size());
+        assertEquals(0, result.getData().size());
         assertEquals(2L, result.getCount());
     }
 

@@ -13,10 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.Mockito.*;
 
@@ -78,9 +75,9 @@ public class BatchManagerTest {
         Long stateId = 3L;
         SearchListRequest searchRequest = new SearchListRequest();
 
-        batchManager.getCount(categoryId, manufacturerId, stateId, searchRequest);
+        batchManager.getCount(new ArrayList<>(),categoryId, manufacturerId, stateId, searchRequest, true, new Date(), new Date());
 
-        verify(batchDao, times(1)).getCount(categoryId, manufacturerId, stateId, searchRequest);
+        verify(batchDao, times(1)).getCount(new ArrayList<>(), categoryId, manufacturerId, stateId, searchRequest, true, new Date(), new Date());
     }
 
 
@@ -93,9 +90,9 @@ public class BatchManagerTest {
         SearchListRequest searchRequest = new SearchListRequest();
         Boolean remQuantity = true;
 
-        batchManager.findAllBatches(categoryId, manufacturerId, pageNumber, pageSize, searchRequest, remQuantity);
+        batchManager.findAllBatches(new ArrayList<>(), new Date(), new Date(),categoryId, manufacturerId, pageNumber, pageSize, searchRequest, remQuantity, true);
 
-        verify(batchDao, times(1)).findAllBatches(categoryId, manufacturerId, pageNumber, pageSize, searchRequest, remQuantity);
+        verify(batchDao, times(1)).findAllBatches(new ArrayList<>(), new Date(), new Date(),categoryId, manufacturerId, pageNumber, pageSize, searchRequest, remQuantity, true);
     }
 
 

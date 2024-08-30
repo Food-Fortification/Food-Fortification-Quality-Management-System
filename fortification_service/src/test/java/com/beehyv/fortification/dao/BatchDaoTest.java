@@ -16,7 +16,9 @@ import org.mockito.quality.Strictness;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -56,6 +58,10 @@ class BatchDaoTest {
         Integer pageSize = 10;
         SearchListRequest searchRequest = new SearchListRequest();
         Boolean remQuantity = true;
+        Boolean labTested = true;
+        List<String> states = new ArrayList<>();
+        Date from = new Date();
+        Date to = new Date();
 
         Batch batch1 = new Batch();
         batch1.setId(1L);
@@ -73,7 +79,7 @@ class BatchDaoTest {
                 .thenReturn(expectedBatches);
 
         // Act
-        List<Batch> actualBatches = batchDao.findAllBatches(categoryId, manufacturerId, pageNumber, pageSize, searchRequest, remQuantity);
+        List<Batch> actualBatches = batchDao.findAllBatches(states, from, to, categoryId, manufacturerId, pageNumber, pageSize, searchRequest, remQuantity, labTested);
 
         // Assert
         assertEquals(expectedBatches, actualBatches);
@@ -86,7 +92,10 @@ class BatchDaoTest {
         Long manufacturerId = 2L;
         Long stateId = 3L;
         SearchListRequest searchRequest = new SearchListRequest();
-
+        List<String> states = new ArrayList<>();
+        Date from = new Date();
+        Date to = new Date();
+        Boolean remQuantity = true;
         when(entityManager.createQuery(anyString(), eq(Long.class)))
                 .thenReturn(typedQueryLong);
         when(typedQueryLong.setParameter(anyString(), any()))
@@ -95,7 +104,7 @@ class BatchDaoTest {
                 .thenReturn(10L);
 
         // Act
-        Long actualCount = batchDao.getCount(categoryId, manufacturerId, stateId, searchRequest);
+        Long actualCount = batchDao.getCount(states,categoryId, manufacturerId, stateId, searchRequest, remQuantity, from, to);
 
         // Assert
         assertEquals(10L, actualCount);
