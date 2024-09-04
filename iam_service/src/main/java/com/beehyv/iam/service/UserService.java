@@ -63,12 +63,6 @@ public class UserService {
     private final UserRoleCategoryManager userRoleCategoryManager;
     private final StatusManager statusManager;
 
-    @Value(("${service.superadmin.username}"))
-    private String superadminUsername;
-
-    @Value(("${service.superadmin.password}"))
-    private String superadminPassword;
-
     @Value("${service.lab.baseUrl}")
     private String labBaseUrl;
 

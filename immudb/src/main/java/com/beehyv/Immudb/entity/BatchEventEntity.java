@@ -22,10 +22,12 @@ public class BatchEventEntity implements Serializable {
     private Timestamp dateOfAction;
     private String createdBy;
     private Timestamp createdDate;
+    private String licenseNumber;
+
 
     @JsonIgnore
     public String getColumnNames(){
-        return "(entityId, manufacturerName, manufacturerAddress, type, state, comments, dateOfAction," +
+        return "(entityId, manufacturerName,licenseNumber, manufacturerAddress, type, state, comments, dateOfAction," +
                 " createdBy, createdDate)";
     }
 }

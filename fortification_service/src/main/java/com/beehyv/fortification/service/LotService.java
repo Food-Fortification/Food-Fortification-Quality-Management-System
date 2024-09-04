@@ -1,5 +1,6 @@
 package com.beehyv.fortification.service;
 
+import com.beehyv.fortification.dto.iam.NameAddressResponseDto;
 import com.beehyv.fortification.dto.requestDto.*;
 import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.enums.ActionType;
@@ -43,4 +44,6 @@ public interface LotService {
     List<LotResponseDto> getSourceLotsByTargetLotId(Long id);
 
     LotResponseDto getLotByIdForEventUpdate(Long id);
+    NameAddressResponseDto getTartgetManufacturerByLotId(Long id);
+
 }

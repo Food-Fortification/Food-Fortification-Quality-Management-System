@@ -1,6 +1,7 @@
 package com.beehyv.fortification.service.impl;
 
 import com.beehyv.fortification.dto.iam.AddressResponseDto;
+import com.beehyv.fortification.dto.iam.NameAddressResponseDto;
 import com.beehyv.fortification.dto.requestDto.*;
 import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.entity.*;
@@ -88,9 +89,6 @@ public class LotServiceImpl implements LotService {
         stateMap.put("lotSampleRejected", "target");
     }
 
-    private final String[] batchDetailsColumnNames = {"SL. NO", "Batch No", "Manufacturer Batch Number", "Manufacturing Date", "Expiry Date", "Quantity Used", "Stage"};
-
-    private final String[] inventoryDetailsColumnNames = {"SL. NO", "Lot Number", "Manufacturing Date", "Expiry Date", "Total Quantity(KG)", "Remaining Quantity(KG)", "Stage"};
 
     @Override
     public Long createLot(Long categoryId, LotRequestDto dto) {
@@ -981,6 +979,18 @@ public class LotServiceImpl implements LotService {
                 }).toList();
         dto.setUsage(mixes);
         return dto;
+    }
+
+    @Override
+    public NameAddressResponseDto getTartgetManufacturerByLotId(Long id) {
+        NameAddressResponseDto nameAddressResponseDto = new NameAddressResponseDto();
+        Long targetManufacturerId= manager.getTartgetManufacturerByLotId(id);
+        Map<String, Map<String, String>> map = IamServiceRestHelper.getNameAndAddress(Collections.singletonList(targetManufacturerId), keycloakInfo.getAccessToken());
+        Map<String, String> result = map.get(targetManufacturerId.toString());
+        nameAddressResponseDto.setName(result.get("name"));
+        nameAddressResponseDto.setCompleteAddress(result.get("address"));
+        nameAddressResponseDto.setLicenseNo(result.get("licenseNo"));
+        return nameAddressResponseDto;
     }
 
 

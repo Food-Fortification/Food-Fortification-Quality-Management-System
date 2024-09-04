@@ -105,7 +105,7 @@ public class BatchDao extends BaseDao<Batch> {
     public List<Batch> findAllBatches(Integer pageNumber, Integer pageSize, SearchListRequest searchRequest, List<Long> categoryIds, Boolean remQuantity, List<Long> testManufacturerIds) {
         List<Batch> obj = null;
         String hql = "SELECT b FROM Batch as b " +
-                "WHERE ( b.category.id in (:categoryIds)) " +
+                "WHERE ( :categoryIdsIsNull is true or b.category.id in (:categoryIds)) " +
                 "AND (:testManufacturerIdsNull is true or b.manufacturerId not in :testManufacturerIds) " +
                 "AND (:remQuantity is null or b.remainingQuantity > :remQuantity) " +
                 "AND (:stateIdsNull is true or b.state.id in (:stateIds)) " +
@@ -117,7 +117,8 @@ public class BatchDao extends BaseDao<Batch> {
                 "AND (:expEnd is null or b.dateOfExpiry <= :expEnd) "
                 + " order by b.id asc";
         TypedQuery<Batch> query = em.createQuery(hql, Batch.class)
-                .setParameter("categoryIds", categoryIds);
+                .setParameter("categoryIds", categoryIds)
+                .setParameter("categoryIdsIsNull", categoryIds.isEmpty());
         if (remQuantity) {
             query.setParameter("remQuantity", 0d);
         } else {

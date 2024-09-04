@@ -1,20 +1,16 @@
 package com.beehyv.fortification.controller;
 
 import com.beehyv.fortification.dto.requestDto.DashboardRequestDto;
-import com.beehyv.fortification.dto.requestDto.QuantityAggregatesExcelRequestDto;
+import com.beehyv.fortification.dto.requestDto.SearchListRequest;
 import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.entity.StateType;
 import com.beehyv.fortification.enums.GeoAggregationType;
-import com.beehyv.fortification.enums.GeoManufacturerProductionResponseType;
 import com.beehyv.fortification.enums.GeoManufacturerQuantityResponseType;
-import com.beehyv.fortification.enums.GeoManufacturerTestingResponseType;
+import com.beehyv.fortification.service.BatchService;
 import com.beehyv.fortification.service.DashboardService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,11 +24,22 @@ import java.util.List;
 public class DashboardController {
 
     private DashboardService dashboardService;
+    private BatchService batchService;
 
     @PostMapping(value = "/count")
     public ResponseEntity<List<StateGeoDto>> getCount(@RequestParam(required = false) Integer year, @RequestBody DashboardRequestDto dto) {
         List<StateGeoDto> response = dashboardService.getDashboardCountData(year, dto);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @PostMapping("list/batches")
+    public ResponseEntity<ListResponse<BatchListResponseDTO>> getAllBatches(@RequestParam(required = false) Integer pageNumber,
+                                                                            @RequestParam(required = false) Integer pageSize,
+                                                                            @RequestBody DashboardRequestDto dto,
+                                                                            @RequestParam(required = false) String responseType,
+                                                                            @RequestParam Long manufacturerId,
+                                                                            @RequestBody(required = false) SearchListRequest searchListRequest) {
+        ListResponse<BatchListResponseDTO> batches = batchService.getAllBatchesInSuperMonitor(responseType, dto.getFromDate(),dto.getToDate(),dto.getCategoryId(), pageNumber, pageSize, searchListRequest,manufacturerId);
+        return new ResponseEntity<>(batches, HttpStatus.OK);
     }
 
     @PostMapping("/geography/manufacturers/{responseType}")

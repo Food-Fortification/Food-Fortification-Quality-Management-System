@@ -30,10 +30,6 @@ public class ImmudbServiceImpl implements ImmudbService{
 
     @Value("${immudb.url}")
     private String url;
-    @Value("${service.iam.baseUrl}")
-    private String iamBaseUrl ;
-    @Value("${service.lab.baseUrl}")
-    private String labBaseUrl;
 
     @Value("${immudb.database}")
     private String database;
@@ -114,7 +110,7 @@ public class ImmudbServiceImpl implements ImmudbService{
             String query =
                     "INSERT INTO " + tableName + " " + event.getColumnNames() + "\n" +
                             "VALUES " + "("+ "'" +event.getEntityId()+"'"+"," + "'" + event.getManufacturerName() + "'" +
-                            "," + "'" + event.getManufacturerAddress() +"'" + "," + "'" +event.getType()+"'" + "," +"'"+
+                            "," + "'"+event.getLicenseNumber() + "'" + "," + "'" + event.getManufacturerAddress() +"'" + "," + "'" +event.getType()+"'" + "," +"'"+
                             event.getState()+"'" + "," + "'"+event.getComments()+"'" + "," +
                             (event.getDateOfAction() != null ? "CAST('"+event.getDateOfAction()+"' AS TIMESTAMP)" : "NULL") + "," +
                             "'"+event.getCreatedBy()+"'" + ","+ "NOW()" + ")"+ ";";

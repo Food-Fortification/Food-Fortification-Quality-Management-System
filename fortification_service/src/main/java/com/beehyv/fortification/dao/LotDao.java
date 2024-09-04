@@ -269,7 +269,7 @@ public class LotDao extends BaseDao<Lot> {
     public List<Lot> findAllByCategoryIds(SearchListRequest searchRequest, List<Long> userCategoryIds, Integer pageNumber, Integer pageSize, List<Long> testManufacturerIds) {
 
         String hql = "SELECT b.sourceLot FROM BatchLotMapping as b " +
-                "WHERE (b.sourceLot.category.id in (:categoryIds)) " +
+                "WHERE (:categoryIdsIsNull is true or b.sourceLot.category.id in (:categoryIds)) " +
                 "AND (:testManufacturerIdsNull is true or b.sourceLot.manufacturerId not in :testManufacturerIds) " +
                 "AND (:targetManufacturerIdsNull is true or b.sourceLot.targetManufacturerId in (:targetManufacturerIds)) " +
                 "AND (:manufacturerIdsNull is true or b.sourceLot.manufacturerId in (:manufacturerIds)) " +
@@ -283,7 +283,8 @@ public class LotDao extends BaseDao<Lot> {
                 "AND (:expEnd is null or b.batch.dateOfExpiry <= :expEnd) " +
                 " order by b.id asc";
         TypedQuery<Lot> query = em.createQuery(hql, Lot.class)
-                .setParameter("categoryIds", userCategoryIds);
+                .setParameter("categoryIds", userCategoryIds)
+                .setParameter("categoryIdsIsNull",userCategoryIds.isEmpty());
         this.setSearchParams(query, searchRequest, testManufacturerIds, false);
         if (pageSize != null && pageNumber != null) {
             query.setFirstResult((pageNumber - 1) * pageSize);
@@ -1472,5 +1473,12 @@ DashboardWarehouseResponseDto responseDto = new DashboardWarehouseResponseDto();
                 .setParameter("fromDate", dto.getFromDate())
                 .setParameter("toDate", dto.getToDate());
         return  query.getResultList();
+    }
+
+    public Long getTartgetManufacturerByLotId(Long id){
+        Long targetManufacturerId = em.createQuery("select l.targetManufacturerId from Lot as l where l.id = :lotId", Long.class)
+                .setParameter("lotId", id)
+                .getSingleResult();
+        return targetManufacturerId;
     }
 }

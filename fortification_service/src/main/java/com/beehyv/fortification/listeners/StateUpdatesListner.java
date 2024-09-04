@@ -11,7 +11,6 @@ import com.beehyv.fortification.manager.CategoryManager;
 import com.beehyv.fortification.manager.LotStateGeoManager;
 import com.beehyv.fortification.entity.*;
 import com.beehyv.fortification.enums.LotConsumedType;
-import com.beehyv.fortification.enums.SampleTestResult;
 import com.beehyv.fortification.manager.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +30,6 @@ public class StateUpdatesListner {
 
     private final LotStateGeoManager lotStateGeoManager;
     private final BatchStateGeoManager batchStateGeoManager;
-    private final CategoryManager categoryManager;
     private final LotManager lotManager;
     private final LotConsumedAggregateManager lotConsumedAggregateManager;
 
@@ -155,17 +153,9 @@ public class StateUpdatesListner {
                 }
             }
             case "batchSampleRejected" -> batchStateGeo.addRejectedQuantity(batchStateEvent.getQuantity());
-            case "rejected" -> {
-                batchStateGeo.addRejectedQuantity(batchStateEvent.getQuantity());
-                if(batchStateEvent.getQuantity() != null){
-                    batchStateGeo.addOnlyBatchTestRejectedQuantity(batchStateEvent.getQuantity());
-                }
-            }
+            case "rejected" -> batchStateGeo.addRejectedQuantity(batchStateEvent.getQuantity());
             case "batchToDispatch" -> {
                 batchStateGeo.addProducedQuantity(batchStateEvent.getQuantity());
-                if(batchStateEvent.getQuantity() != null){
-                    batchStateGeo.addOnlyBatchTestPassedQuantity(batchStateEvent.getQuantity());
-                }
                 if (batchStateEvent.getIsBatchTested()) {
                     batchStateGeo.addAvailableTested(batchStateEvent.getQuantity());
                 } else {

@@ -265,4 +265,8 @@ public class LotManager extends BaseManager<Lot, LotDao> {
     public List<Object[]> getAllEmpanelWarehouseAggregate(Long categoryId, DashboardRequestDto dto, List<Long> testManufacturerIds,List<Long> targetManufacturerIds, String empanelStateGeoId) {
         return dao.getAllEmpanelWarehouseAggregate(categoryId, dto, testManufacturerIds,targetManufacturerIds,empanelStateGeoId);
     }
+
+    public Long getTartgetManufacturerByLotId(Long id){
+        return dao.getTartgetManufacturerByLotId(id);
+    }
 }

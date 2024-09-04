@@ -156,4 +156,8 @@ public class LotController {
     public ResponseEntity<?> getBathByIdForEventUpdate(@PathVariable("lotId") Long id, @PathVariable Long categoryId) {
         return ResponseEntity.ok(service.getLotByIdForEventUpdate(id));
     }
+    @GetMapping("/{id}/target")
+    private ResponseEntity<?>getTartgetManufacturerByLotId(@PathVariable Long id){
+        return new ResponseEntity<>(service.getTartgetManufacturerByLotId(id), HttpStatus.OK);
+    }
 }

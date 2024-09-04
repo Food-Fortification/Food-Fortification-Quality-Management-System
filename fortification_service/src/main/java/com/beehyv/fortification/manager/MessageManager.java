@@ -16,7 +16,6 @@ import com.beehyv.fortification.helper.Constants;
 import com.beehyv.fortification.helper.IamServiceRestHelper;
 import com.beehyv.fortification.helper.LabServiceManagementHelper;
 import com.beehyv.fortification.service.impl.LotServiceImpl;
-import com.beehyv.parent.keycloakSecurity.KeycloakInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -24,7 +23,6 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
@@ -77,7 +75,7 @@ public class MessageManager {
             if (!isSuperAdmin && !isFlowSkipped) {
                 entity.setManufacturerName((String) userInfo.get("manufacturerName"));
                 entity.setManufacturerAddress(manufacturerAddress((String) userInfo.get("manufacturerAddress")));
-                String url =Constants.IAM_SERVICE_URL + "manufacturer/licenseNumber/"+((String) userInfo.get("manufacturerName"));
+                String url =Constants.IAM_SERVICE_URL + "v1/manufacturer/licenseNumber/"+((String) userInfo.get("manufacturerName"));
                 String licenseNumber = IamServiceRestHelper.fetchResponse(url, String.class,token);
                 entity.setLicenseNumber(licenseNumber);
                 eventUpdate.setStateGeoId(Integer.parseInt(getAddressResponseDtoFromString((String) userInfo.get("manufacturerAddress")).getState().getGeoId()));
@@ -167,7 +165,7 @@ public class MessageManager {
                         .findFirst().ifPresent(batchProperty -> entity.setManufacturerName(batchProperty.getValue()));
                 batchProperties.stream().filter(batchProperty -> batchProperty.getName().equals("manufacture_completeAddress"))
                         .findFirst().ifPresent(batchProperty -> entity.setManufacturerAddress(batchProperty.getValue()));
-                String url = Constants.IAM_SERVICE_URL + "manufacturer/licenseNumber/" + entity.getManufacturerName();
+                String url = Constants.IAM_SERVICE_URL + "v1/manufacturer/licenseNumber/" + entity.getManufacturerName();
                 String licenseNumber = IamServiceRestHelper.fetchResponse(url, String.class, token);
                 entity.setLicenseNumber(licenseNumber);
                 if (dto.getDateOfAction() != null) {

@@ -8,6 +8,7 @@ import com.beehyv.fortification.enums.ActionType;
 import com.beehyv.fortification.enums.EventTest;
 import com.beehyv.fortification.enums.SampleTestResult;
 
+import java.util.Date;
 import java.util.List;
 
 public interface BatchService {
@@ -40,4 +41,7 @@ public interface BatchService {
     BatchResponseDto getBatchByIdForEventUpdate(Long id);
 
     void eventUpdateBody(String encrypted, EventTest param);
+
+    ListResponse getAllBatchesInSuperMonitor(String responseType, Date fromDate, Date toDate, Long categoryId, Integer pageNumber, Integer pageSize, SearchListRequest searchRequest, Long manufactuerId);
+
 }

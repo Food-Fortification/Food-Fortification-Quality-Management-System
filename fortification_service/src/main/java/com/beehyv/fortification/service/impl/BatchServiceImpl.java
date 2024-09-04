@@ -23,13 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Task;
 import org.apache.http.util.TextUtils;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.representations.AccessToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -320,6 +316,12 @@ public class BatchServiceImpl implements BatchService {
         }
         return getBatchDetailsHelper(batch);
     }
+
+    @Override
+    public ListResponse getAllBatchesInSuperMonitor(String responseType, Date fromDate, Date toDate, Long categoryId, Integer pageNumber, Integer pageSize, SearchListRequest searchRequest,Long manufactuerId){
+        return this.getAllBatches(responseType, fromDate, toDate, categoryId, pageNumber, pageSize, searchRequest, false,manufactuerId);
+    }
+
 
 
     public BatchResponseDto getBatchDetailsHelper(Batch batch) {
