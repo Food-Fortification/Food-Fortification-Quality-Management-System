@@ -87,7 +87,7 @@ public class IamServiceRestHelper {
         return fetchResponse(url, AddressResponseDto.class, token);
     }
 
-    public static HttpStatus addKeycloakRoles(List<String> roles, String token) {
+    public static HttpStatus addKeycloakRoles(Set<String> roles, String token) {
 
 
         String url = Constants.IAM_SERVICE_URL + "role/create-roles";

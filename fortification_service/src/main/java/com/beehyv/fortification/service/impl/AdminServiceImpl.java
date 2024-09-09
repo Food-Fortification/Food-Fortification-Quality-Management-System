@@ -62,6 +62,8 @@ public class AdminServiceImpl implements AdminService {
 
     private final BaseMapper<LotListResponseDTO, LotRequestDto, Lot> lotListMapper = BaseMapper.getForListClass(LotMapper.class);
 
+    private Set<String> roles = new HashSet<>();
+
     @Override
     public ListResponse getAllBatches(Integer pageNumber, Integer pageSize, SearchListRequest searchRequest) {
         return this.getAllBatches(pageNumber, pageSize, searchRequest, false);
@@ -133,7 +135,6 @@ public class AdminServiceImpl implements AdminService {
             product.get().setDescription(dto.getDescription());
             productEntity = productManager.create(product.get());
         }
-        List<String> roles = new ArrayList<>();
 
         dto.getCategories().forEach(categoryDslDto -> {
             Category category = checkAndSaveCategory
@@ -144,6 +145,13 @@ public class AdminServiceImpl implements AdminService {
             if (workflowDtos.size() == 1) {
                 WorkflowDto workflowDto = workflowDtos.get(0);
                 List<CategoryDslDto> categoryDslDtos = workflowDto.getCategories();
+                Category stageCategory;
+                List<Category> stageCategories = manager.findCategoryListByName(stage);
+                if (stageCategories.isEmpty()) {
+                    stageCategory = null;
+                } else {
+                    stageCategory = stageCategories.get(0);
+                }
                 if (!categoryDslDtos.isEmpty()) {
                     categoryDslDtos.forEach(categoryDslDto -> {
                         Category category = checkAndSaveCategory
@@ -202,13 +210,13 @@ public class AdminServiceImpl implements AdminService {
                                 usersStateList.add("receivedRejected");
 
                                 checkAndSaveRoleCategoryAndState(
-                                        category,
+                                        Objects.requireNonNullElse(stageCategory, category),
                                         category,
                                         "USER",
                                         RoleCategoryType.MODULE,
                                         categoryDslDto.getTarget(),
                                         usersStateList);
-                                roles.add(category.getName().toUpperCase() + "_" + "USER" + "_" + RoleCategoryType.MODULE);
+
 
                                 List<String> labStateList = new ArrayList<>();
                                 labStateList.add("sentBatchSampleToLabTest");
@@ -219,7 +227,7 @@ public class AdminServiceImpl implements AdminService {
                                 labStateList.add("lotSampleInLab");
 
                                 checkAndSaveRoleCategoryAndState(
-                                        category,
+                                        Objects.requireNonNullElse(stageCategory, category),
                                         category,
                                         "USER",
                                         RoleCategoryType.LAB,
@@ -239,13 +247,12 @@ public class AdminServiceImpl implements AdminService {
                                 usersStateListAdmin.add("sentBackRejected");
                                 usersStateListAdmin.add("receivedRejected");
                                 checkAndSaveRoleCategoryAndState(
-                                        category,
+                                        Objects.requireNonNullElse(stageCategory, category),
                                         category,
                                         "ADMIN",
                                         RoleCategoryType.MODULE,
                                         categoryDslDto.getTarget(),
                                         usersStateListAdmin);
-                                roles.add(category.getName().toUpperCase() + "_" + "ADMIN" + "_" + RoleCategoryType.MODULE);
 
                                 List<String> labStateListAdmin = new ArrayList<>();
                                 labStateListAdmin.add("sentBatchSampleToLabTest");
@@ -255,13 +262,12 @@ public class AdminServiceImpl implements AdminService {
                                 labStateListAdmin.add("sentLotSampleToLabTest");
                                 labStateListAdmin.add("lotSampleInLab");
                                 checkAndSaveRoleCategoryAndState(
-                                        category,
+                                        Objects.requireNonNullElse(stageCategory, category),
                                         category,
                                         "ADMIN",
                                         RoleCategoryType.LAB,
                                         categoryDslDto.getTarget(),
                                         labStateListAdmin);
-                                roles.add(category.getName().toUpperCase() + "_" + "ADMIN" + "_" + RoleCategoryType.LAB);
 
                             } else {
                                 List<String> usersStateList = new ArrayList<>();
@@ -270,13 +276,12 @@ public class AdminServiceImpl implements AdminService {
                                 usersStateList.add("partiallyDispatched");
                                 usersStateList.add("fullyDispatched");
                                 checkAndSaveRoleCategoryAndState(
-                                        category,
+                                        Objects.requireNonNullElse(stageCategory, category),
                                         category,
                                         "USER",
                                         RoleCategoryType.MODULE,
                                         categoryDslDto.getTarget(),
                                         usersStateList);
-                                roles.add(category.getName().toUpperCase() + "_" + "USER" + "_" + RoleCategoryType.MODULE);
 
                                 List<String> usersStateListAdmin = new ArrayList<>();
                                 usersStateListAdmin.add("created");
@@ -284,13 +289,12 @@ public class AdminServiceImpl implements AdminService {
                                 usersStateListAdmin.add("partiallyDispatched");
                                 usersStateListAdmin.add("fullyDispatched");
                                 checkAndSaveRoleCategoryAndState(
-                                        category,
+                                        Objects.requireNonNullElse(stageCategory, category),
                                         category,
                                         "ADMIN",
                                         RoleCategoryType.MODULE,
                                         categoryDslDto.getTarget(),
                                         usersStateListAdmin);
-                                roles.add(category.getName().toUpperCase() + "_" + "ADMIN" + "_" + RoleCategoryType.MODULE);
 
                             }
                         }
@@ -302,10 +306,20 @@ public class AdminServiceImpl implements AdminService {
                                 Category target = checkAndSaveCategory(targetDto.getName(), productEntity, categoryDslDto.isOutsidePlatform());
 
                                 if (categoryDslDto.getType().contentEquals("creation")) {
-                                    checkAndSaveSourceMappings(category, category, target, categoryDslDto.getType());
+                                    checkAndSaveSourceMappings(
+                                            category,
+                                            Objects.requireNonNullElse(stageCategory, category),
+                                            target,
+                                            categoryDslDto.getType()
+                                    );
                                 } else if (categoryDslDto.getType().contentEquals("dispatch")) {
                                     Category base = checkAndSaveCategory(workflowDto.getName(), productEntity, categoryDslDto.isOutsidePlatform());
-                                    checkAndSaveSourceMappings(category, base, target, categoryDslDto.getType());
+                                    checkAndSaveSourceMappings(
+                                            category,
+                                            base,
+                                            target,
+                                            categoryDslDto.getType()
+                                    );
 
                                     // if dispatched start setting states for user
                                     if (categoryDslDto.getDispatchLabOption().contentEquals("OPTIONAL") ||
@@ -323,7 +337,6 @@ public class AdminServiceImpl implements AdminService {
                                                 RoleCategoryType.MODULE,
                                                 categoryDslDto.getTarget(),
                                                 usersStateList);
-                                        roles.add(category.getName().toUpperCase() + "_" + "USER" + "_" + RoleCategoryType.MODULE);
 
                                         List<String> labStateList = new ArrayList<>();
 
@@ -349,7 +362,6 @@ public class AdminServiceImpl implements AdminService {
                                                 RoleCategoryType.MODULE,
                                                 categoryDslDto.getTarget(),
                                                 usersStateListAdmin);
-                                        roles.add(category.getName().toUpperCase() + "_" + "ADMIN" + "_" + RoleCategoryType.MODULE);
 
                                         List<String> labStateListAdmin = new ArrayList<>();
                                         labStateListAdmin.add("approved");
@@ -372,7 +384,6 @@ public class AdminServiceImpl implements AdminService {
                                                 RoleCategoryType.MODULE,
                                                 categoryDslDto.getTarget(),
                                                 usersStateList);
-                                        roles.add(category.getName().toUpperCase() + "_" + "USER" + "_" + RoleCategoryType.MODULE);
 
                                         List<String> usersStateListAdmin = new ArrayList<>();
                                         usersStateListAdmin.add("approved");
@@ -383,7 +394,6 @@ public class AdminServiceImpl implements AdminService {
                                                 RoleCategoryType.MODULE,
                                                 categoryDslDto.getTarget(),
                                                 usersStateListAdmin);
-                                        roles.add(category.getName().toUpperCase() + "_" + "ADMIN" + "_" + RoleCategoryType.MODULE);
 
                                     }
 
@@ -406,7 +416,6 @@ public class AdminServiceImpl implements AdminService {
                                         RoleCategoryType.MODULE,
                                         categoryDslDto.getTarget(),
                                         usersStateList);
-                                roles.add(category.getName().toUpperCase() + "_" + "APPROVER" + "_" + RoleCategoryType.MODULE);
 
                                 List<String> usersStateListAdmin = new ArrayList<>();
                                 usersStateListAdmin.add("dispatched");
@@ -423,7 +432,6 @@ public class AdminServiceImpl implements AdminService {
                                         RoleCategoryType.MODULE,
                                         categoryDslDto.getTarget(),
                                         usersStateListAdmin);
-                                roles.add(category.getName().toUpperCase() + "_" + "ADMIN" + "_" + RoleCategoryType.MODULE);
 
                                 if (targetDto.getReceiveLabOption().contentEquals("OPTIONAL") ||
                                         targetDto.getReceiveLabOption().contentEquals("MANDATE")) {
@@ -441,7 +449,6 @@ public class AdminServiceImpl implements AdminService {
                                             RoleCategoryType.LAB,
                                             categoryDslDto.getTarget(),
                                             usersStateListLab);
-                                    roles.add(category.getName().toUpperCase() + "_" + "APPROVER" + "_" + RoleCategoryType.LAB);
 
                                     List<String> usersStateListAdminLab = new ArrayList<>();
                                     usersStateListAdminLab.add("lotSampleLabTestDone");
@@ -457,7 +464,6 @@ public class AdminServiceImpl implements AdminService {
                                             RoleCategoryType.LAB,
                                             categoryDslDto.getTarget(),
                                             usersStateListAdminLab);
-                                    roles.add(category.getName().toUpperCase() + "_" + "ADMIN" + "_" + RoleCategoryType.LAB);
 
                                 }
                                 checkAndSaveLabConfig(category, target, targetDto.getReceiveLabOption().toLowerCase());
@@ -471,7 +477,7 @@ public class AdminServiceImpl implements AdminService {
 
 
         IamServiceRestHelper.addKeycloakRoles(roles, keycloakInfo.getAccessToken());
-        return "";
+        return "dsl executed successfully";
     }
 
     private void checkAndSaveSourceMappings(Category returnCategory, Category source, Category target, String type) {
@@ -527,7 +533,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private void checkAndSaveRoleCategoryAndState(Category category, Category baseCategory, String role, RoleCategoryType type, List<TargetDto> target, List<String> stateList) {
-
+        roles.add(category.getName().toUpperCase() + "_" + role + "_" + type);
         RoleCategory roleCategory = roleCategoryManager
                 .findByCategoryAndRoleNames(category.getName(), role, type);
         if (roleCategory == null) {
