@@ -39,7 +39,7 @@ public class StateUpdatesListnerTest {
 
     @Before
     public void setUp() {
-        stateUpdatesListner = new StateUpdatesListner(lotStateGeoManager, batchStateGeoManager, categoryManager, lotManager, lotConsumedAggregateManager);
+        stateUpdatesListner = new StateUpdatesListner(lotStateGeoManager, batchStateGeoManager, lotManager, lotConsumedAggregateManager);
     }
 
     @Test
