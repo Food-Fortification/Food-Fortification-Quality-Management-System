@@ -4,6 +4,7 @@ import com.beehyv.fortification.dto.requestDto.*;
 import com.beehyv.fortification.dto.responseDto.*;
 import com.beehyv.fortification.entity.*;
 import com.beehyv.fortification.enums.EntityType;
+import com.beehyv.fortification.enums.ManufacturerCategoryAction;
 import com.beehyv.fortification.helper.Constants;
 import com.beehyv.fortification.helper.IamServiceRestHelper;
 import com.beehyv.fortification.helper.LabServiceManagementHelper;
@@ -241,7 +242,7 @@ public class AdminServiceImpl implements AdminService {
                                 usersStateListAdmin.add("batchToDispatch");
                                 usersStateListAdmin.add("partiallyDispatched");
                                 usersStateListAdmin.add("fullyDispatched");
-                                usersStateList.add("batchSampleRejected");
+                                usersStateListAdmin.add("batchSampleRejected");
 
                                 // lot
                                 usersStateListAdmin.add("sentBackRejected");
@@ -307,18 +308,19 @@ public class AdminServiceImpl implements AdminService {
 
                                 if (categoryDslDto.getType().contentEquals("creation")) {
                                     checkAndSaveSourceMappings(
-                                            category,
+                                            Objects.requireNonNullElse(stageCategory, category),
                                             Objects.requireNonNullElse(stageCategory, category),
                                             target,
-                                            categoryDslDto.getType()
+                                            ManufacturerCategoryAction.CREATION
                                     );
+
                                 } else if (categoryDslDto.getType().contentEquals("dispatch")) {
                                     Category base = checkAndSaveCategory(workflowDto.getName(), productEntity, categoryDslDto.isOutsidePlatform());
                                     checkAndSaveSourceMappings(
-                                            category,
-                                            base,
+                                            Objects.requireNonNullElse(stageCategory, category),
+                                            Objects.requireNonNullElse(stageCategory, category),
                                             target,
-                                            categoryDslDto.getType()
+                                            ManufacturerCategoryAction.LOT_TO_LOT_DISPATCH
                                     );
 
                                     // if dispatched start setting states for user
@@ -452,10 +454,10 @@ public class AdminServiceImpl implements AdminService {
 
                                     List<String> usersStateListAdminLab = new ArrayList<>();
                                     usersStateListAdminLab.add("lotSampleLabTestDone");
-                                    usersStateListAdminLab.add("lotSampleRejected");
-                                    usersStateListAdminLab.add("toSendBackRejected");
-                                    usersStateListAdminLab.add("approved");
-                                    usersStateList.add("lotSampleLabTestDone");
+//                                    usersStateListAdminLab.add("lotSampleRejected");
+//                                    usersStateListAdminLab.add("toSendBackRejected");
+//                                    usersStateListAdminLab.add("approved");
+//                                    usersStateList.add("lotSampleLabTestDone");
 //                                    usersStateListAdminLab.add("rejected");
                                     checkAndSaveRoleCategoryAndState(
                                             manager.findCategoryByName(targetDto.getName()),
@@ -480,7 +482,7 @@ public class AdminServiceImpl implements AdminService {
         return "dsl executed successfully";
     }
 
-    private void checkAndSaveSourceMappings(Category returnCategory, Category source, Category target, String type) {
+    private void checkAndSaveSourceMappings(Category returnCategory, Category source, Category target, ManufacturerCategoryAction categoryAction) {
         SourceCategoryMapping sourceCategoryMapping =
                 sourceCategoryMappingManager.findByIds(returnCategory.getId(), source.getId(), target.getId());
         if (sourceCategoryMapping == null) {
@@ -488,6 +490,7 @@ public class AdminServiceImpl implements AdminService {
             sourceCategoryMapping.setSourceCategory(source);
             sourceCategoryMapping.setTargetCategory(target);
             sourceCategoryMapping.setReturnCategory(returnCategory);
+            sourceCategoryMapping.setCategoryAction(categoryAction);
             sourceCategoryMappingManager.create(sourceCategoryMapping);
         }
     }

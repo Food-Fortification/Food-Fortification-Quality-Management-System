@@ -15,7 +15,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class ManufacturerDao extends BaseDao<Manufacturer> {
@@ -62,12 +61,13 @@ public class ManufacturerDao extends BaseDao<Manufacturer> {
             return new ArrayList<>();
         }
     }
-    public List<Manufacturer> findByTypeAndStatus(ManufacturerType type, String search, List<Long> targetCategoryIds, Integer pageNumber, Integer pageSize){
+    public List<Manufacturer> findByTypeAndStatus(Long manufacturerId, ManufacturerType type, String search, List<Long> targetCategoryIds, Integer pageNumber, Integer pageSize){
         try {
             String hql = "SELECT distinct(m) FROM Manufacturer m " +
                     "join ManufacturerCategory mc on mc.manufacturer.id = m.id " +
                     "where m.manufacturerType = :type " +
                     "AND mc.isEnabled is true " +
+                    "AND m.id != :manufacturerId " +
                     "AND (:search is null or m.name like :search) " +
                     "AND (:targetCategoryIdsNull is true or mc.categoryId in (:targetCategoryIds)) " +
                     "AND mc.action =:action "+
@@ -78,6 +78,7 @@ public class ManufacturerDao extends BaseDao<Manufacturer> {
                     .setParameter("type",type)
                     .setParameter("action",ManufacturerCategoryAction.CREATION)
                     .setParameter("isDeleted", false)
+                    .setParameter("manufacturerId", manufacturerId)
                     .setParameter("status","Active");
             this.setParameters(query, search, targetCategoryIds);
             if (pageSize != null && pageNumber != null) {
@@ -89,12 +90,13 @@ public class ManufacturerDao extends BaseDao<Manufacturer> {
             return new ArrayList<>();
         }
     }
-    public Long getCountForTypeAndStatus(ManufacturerType type, String search, List<Long> targetCategoryIds){
+    public Long getCountForTypeAndStatus(Long manufacturerId, ManufacturerType type, String search, List<Long> targetCategoryIds){
         try {
             String hql = "Select count(distinct(m).id) FROM Manufacturer m " +
                     "join ManufacturerCategory mc on mc.manufacturer.id = m.id " +
                     "where m.manufacturerType = :type " +
                     "AND mc.isEnabled is true " +
+                    "AND m.id != :manufacturerId " +
                     "AND (:search is null or m.name like :search) " +
                     "AND (:targetCategoryIdsNull is true or mc.categoryId in (:targetCategoryIds)) " +
                     "AND mc.action =:action "+
@@ -104,6 +106,7 @@ public class ManufacturerDao extends BaseDao<Manufacturer> {
                     .setParameter("type",type)
                     .setParameter("action",ManufacturerCategoryAction.CREATION)
                     .setParameter("isDeleted", false)
+                    .setParameter("manufacturerId", manufacturerId)
                     .setParameter("status","Active");
             this.setParameters(query, search, targetCategoryIds);
             return query.getSingleResult();

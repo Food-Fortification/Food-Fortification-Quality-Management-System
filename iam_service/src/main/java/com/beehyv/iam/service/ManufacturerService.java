@@ -261,8 +261,8 @@ public class ManufacturerService {
             count = manufacturerManager.getCountForIdAndType(tokenManufacturerId, manufacturerType, search, targetCategoryIds);
         }
         if (manufacturers.isEmpty()){
-        manufacturers = manufacturerManager.findByTypeAndStatus(manufacturerType, search, targetCategoryIds, pageNumber, pageSize);
-        count = manufacturerManager.getCountForTypeAndStatus(manufacturerType, search, targetCategoryIds);
+        manufacturers = manufacturerManager.findByTypeAndStatus((manufacturerId !=null && manufacturerId!=0L)? manufacturerId : tokenManufacturerId, manufacturerType, search, targetCategoryIds, pageNumber, pageSize);
+        count = manufacturerManager.getCountForTypeAndStatus((manufacturerId !=null && manufacturerId!=0L)? manufacturerId : tokenManufacturerId, manufacturerType, search, targetCategoryIds);
         }
         return ListResponse.from(manufacturers, dtoMapper::mapEntityToDetailsDto, count);
     }

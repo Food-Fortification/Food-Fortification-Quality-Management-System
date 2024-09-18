@@ -83,20 +83,21 @@ public class ManufacturerManagerTest {
         List<Long> targetCategoryIds = Collections.singletonList(1L);
         Integer pageNumber = 1;
         Integer pageSize = 10;
+        Long manufacturerId = 1L;
         List<Manufacturer> expectedManufacturers = Collections.singletonList(new Manufacturer());
 
         // Mock behavior of ManufacturerDao
-        when(manufacturerDao.findByTypeAndStatus(type, search, targetCategoryIds, pageNumber, pageSize))
+        when(manufacturerDao.findByTypeAndStatus(manufacturerId, type, search, targetCategoryIds, pageNumber, pageSize))
                 .thenReturn(expectedManufacturers);
 
         // Call method under test
         List<Manufacturer> actualManufacturers = manufacturerManager.findByTypeAndStatus(
-                type, search, targetCategoryIds, pageNumber, pageSize);
+                manufacturerId, type, search, targetCategoryIds, pageNumber, pageSize);
 
         // Verify
         assertEquals(expectedManufacturers, actualManufacturers);
         verify(manufacturerDao, times(1))
-                .findByTypeAndStatus(type, search, targetCategoryIds, pageNumber, pageSize);
+                .findByTypeAndStatus(manufacturerId, type, search, targetCategoryIds, pageNumber, pageSize);
     }
 
     // Test method for getCountForIdAndType
@@ -130,18 +131,19 @@ public class ManufacturerManagerTest {
         String search = "search";
         List<Long> targetCategoryIds = Collections.singletonList(1L);
         Long expectedCount = 5L;
+        Long manufacturerId = 1L;
 
         // Mock behavior of ManufacturerDao
-        when(manufacturerDao.getCountForTypeAndStatus(type, search, targetCategoryIds))
+        when(manufacturerDao.getCountForTypeAndStatus(manufacturerId, type, search, targetCategoryIds))
                 .thenReturn(expectedCount);
 
         // Call method under test
-        Long actualCount = manufacturerManager.getCountForTypeAndStatus(type, search, targetCategoryIds);
+        Long actualCount = manufacturerManager.getCountForTypeAndStatus(manufacturerId,type, search, targetCategoryIds);
 
         // Verify
         assertEquals(expectedCount, actualCount);
         verify(manufacturerDao, times(1))
-                .getCountForTypeAndStatus(type, search, targetCategoryIds);
+                .getCountForTypeAndStatus(manufacturerId, type, search, targetCategoryIds);
     }
 
     @Test

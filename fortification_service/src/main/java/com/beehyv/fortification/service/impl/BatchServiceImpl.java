@@ -182,7 +182,6 @@ public class BatchServiceImpl implements BatchService {
         lot.setCategory(batch.getCategory());
         lot.setLotNo(batch.getBatchNo() + "_L01");
         lot.setLastActionDate(batch.getDateOfManufacture());
-        lot.setPrefetchedInstructions(batch.getPrefetchedInstructions());
 
         Set<LotProperty> lotProperties = lot.getLotProperties();
         if (lotProperties == null) {
@@ -301,7 +300,6 @@ public class BatchServiceImpl implements BatchService {
         entity.getBatchProperties().removeIf(s -> TextUtils.isEmpty(s.getName())
                 || TextUtils.isEmpty(s.getValue())
                 || s.getValue().equalsIgnoreCase("undefined"));
-        this.setPrefetchedInstructions(entity);
     }
 
     @Override
@@ -446,7 +444,6 @@ public class BatchServiceImpl implements BatchService {
         batch.setUom(uomManager.findByConversionFactor(1L));
         batch.setLastActionDate(batchRequestDto.getDateOfManufacture());
         setGeneratedBatchNumber(batch, batchRequestDto.getDateOfManufacture(), manufacturerId, category);
-        setPrefetchedInstructionsForMaterials(batch);
         batch.addLot(createLotFromBatch(batch));
         batchManager.save(batch);
         Lot lot = batch.getLots().stream().findFirst().get();
@@ -629,7 +626,7 @@ public class BatchServiceImpl implements BatchService {
         }
     }
 
-    private void notificationBuilder(Category category, Batch batch, State prevState, State state, String labId, Long labSampleId) {
+    public void notificationBuilder(Category category, Batch batch, State prevState, State state, String labId, Long labSampleId) {
         messageManager.sendNotification(
                 FirebaseEvent
                         .builder()
@@ -652,7 +649,7 @@ public class BatchServiceImpl implements BatchService {
         );
     }
 
-    private List<String> roleCategoryNames() {
+    public List<String> roleCategoryNames() {
         Set<String> roles = (Set<String>) keycloakInfo.getUserInfo().get("roles");
         List<String[]> roleSplitList = roles.stream().map(r -> r.split("_")).filter(rc -> rc.length == 3).toList();
         List<RoleCategory> roleCategories = roleCategoryManager.findAllByCategoryAndRoleNames(roleSplitList);

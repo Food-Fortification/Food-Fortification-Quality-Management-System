@@ -68,45 +68,22 @@ public class LotTaskListener implements org.activiti.engine.delegate.TaskListene
             AddressResponseDto manufacturerAddress = IamServiceRestHelper.fetchResponse(manufacturerAddressUrl, AddressResponseDto.class, getKeycloakInfo().getAccessToken());
             stateGeoId = Long.valueOf(manufacturerAddress.getVillage().getDistrict().getState().getGeoId());
         }
-        String url = String.format("%s/state-lab-test-access/manufacturer/%s/%s/lot",
-                Constants.IAM_SERVICE_URL, orgId, getCategoryManager().findAllByNames(List.of("WAREHOUSE")).get(0).getId());
-        Boolean isManufacturerRawMaterialsProcured = IamServiceRestHelper.fetchResponse(url, Boolean.class, getKeycloakInfo().getAccessToken());
         State state = getStateManager().findByName(delegateTask.getName());
         List<Category> returnCategories = getCategoryManager().getSourceCategory(lot.getCategory().getId(), stateGeoId);
         List<RoleCategory> roleCategories;
-        if (isManufacturerRawMaterialsProcured) {
-            roleCategories = returnCategories.stream()
-                    .map(r -> getRoleCategoryManager().findAllByCategoryIdAndState(r.getId(), state.getId()))
-                    .flatMap(Collection::stream)
-                    .toList();
-        } else {
-            roleCategories = getRoleCategoryManager().findAllByCategoryIdAndState(
+        roleCategories = getRoleCategoryManager().findAllByCategoryIdAndState(
                     Long.parseLong(map.getOrDefault("categoryId", 0).toString()), state.getId());
-        }
         if (delegateTask.getEventName().equals("create") && !delegateTask.getName().equals("rejected")) {
             ArrayList<String> assigneeList = new ArrayList<>();
-            if (state.getName().equals("sentBackRejected")){
-                orgId = lot.getManufacturerId().toString();
-                for (RoleCategory roleCategory : roleCategories) {
-                    RoleCategoryType type = roleCategory.getRoleCategoryType();
-                    String assigneeString = roleCategory.getRoleName() + "_" + orgId + "_" + type.name() + "_" +
-                            lot.getCategory().getName();
-                    if (roleCategories.indexOf(roleCategory) != 0) {
-                        assigneeList.add(assigneeString);
-                    } else {
-                        assigneeList.add(assigneeString);
-                    }
-                }
-            } else {
-                for (RoleCategory roleCategory : roleCategories) {
-                    RoleCategoryType type = roleCategory.getRoleCategoryType();
-                    String assigneeString = roleCategory.getRoleName() + "_" + orgId + "_" + type.name() + "_" +
-                            roleCategory.getCategory().getName();
-                    if (roleCategories.indexOf(roleCategory) != 0) {
-                        assigneeList.add(assigneeString);
-                    } else {
-                        assigneeList.add(assigneeString);
-                    }
+            for (RoleCategory roleCategory : roleCategories) {
+                RoleCategoryType type = roleCategory.getRoleCategoryType();
+                String assigneeString = roleCategory.getRoleName()
+                        + "_" +  ("sentBackRejected".equals(state.getName()) ? lot.getManufacturerId().toString(): orgId)+
+                        "_" + type.name() + "_" + roleCategory.getCategory().getName();
+                if (roleCategories.indexOf(roleCategory) != 0) {
+                    assigneeList.add(assigneeString);
+                } else {
+                    assigneeList.add(assigneeString);
                 }
             }
 

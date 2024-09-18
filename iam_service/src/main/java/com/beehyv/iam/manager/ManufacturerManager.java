@@ -25,14 +25,14 @@ public class ManufacturerManager extends BaseManager<Manufacturer, ManufacturerD
     public List<Manufacturer> findByIdAndType(Long manufacturerId, ManufacturerType type, String search, List<Long> targetCategoryIds, Integer pageNumber, Integer pageSize) {
         return dao.findByIdAndType(manufacturerId, type, search, targetCategoryIds, pageNumber, pageSize);
     }
-    public List<Manufacturer> findByTypeAndStatus(ManufacturerType type, String search, List<Long> targetCategoryIds, Integer pageNumber, Integer pageSize){
-        return dao.findByTypeAndStatus(type, search, targetCategoryIds, pageNumber, pageSize);
+    public List<Manufacturer> findByTypeAndStatus(Long manufacturerId, ManufacturerType type, String search, List<Long> targetCategoryIds, Integer pageNumber, Integer pageSize){
+        return dao.findByTypeAndStatus(manufacturerId, type, search, targetCategoryIds, pageNumber, pageSize);
     }
     public Long getCountForIdAndType(Long manufacturerId, ManufacturerType type, String search, List<Long> targetCategoryIds){
         return dao.getCountForIdAndType(manufacturerId, type, search, targetCategoryIds);
     }
-    public Long getCountForTypeAndStatus(ManufacturerType type, String search, List<Long> targetCategoryIds){
-        return dao.getCountForTypeAndStatus(type, search, targetCategoryIds);
+    public Long getCountForTypeAndStatus(Long manufacturerId, ManufacturerType type, String search, List<Long> targetCategoryIds){
+        return dao.getCountForTypeAndStatus(manufacturerId, type, search, targetCategoryIds);
     }
     public List<DashboardCountResponseDto> getDistrictCount(Long categoryId, String geoId){
         return dao.getDistrictCount(categoryId, geoId);

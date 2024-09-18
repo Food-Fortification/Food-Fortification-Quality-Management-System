@@ -75,9 +75,6 @@ public class MessageManager {
             if (!isSuperAdmin && !isFlowSkipped) {
                 entity.setManufacturerName((String) userInfo.get("manufacturerName"));
                 entity.setManufacturerAddress(manufacturerAddress((String) userInfo.get("manufacturerAddress")));
-                String url =Constants.IAM_SERVICE_URL + "v1/manufacturer/licenseNumber/"+((String) userInfo.get("manufacturerName"));
-                String licenseNumber = IamServiceRestHelper.fetchResponse(url, String.class,token);
-                entity.setLicenseNumber(licenseNumber);
                 eventUpdate.setStateGeoId(Integer.parseInt(getAddressResponseDtoFromString((String) userInfo.get("manufacturerAddress")).getState().getGeoId()));
             } else {
                 try {
@@ -165,9 +162,6 @@ public class MessageManager {
                         .findFirst().ifPresent(batchProperty -> entity.setManufacturerName(batchProperty.getValue()));
                 batchProperties.stream().filter(batchProperty -> batchProperty.getName().equals("manufacture_completeAddress"))
                         .findFirst().ifPresent(batchProperty -> entity.setManufacturerAddress(batchProperty.getValue()));
-                String url = Constants.IAM_SERVICE_URL + "v1/manufacturer/licenseNumber/" + entity.getManufacturerName();
-                String licenseNumber = IamServiceRestHelper.fetchResponse(url, String.class, token);
-                entity.setLicenseNumber(licenseNumber);
                 if (dto.getDateOfAction() != null) {
                     entity.setDateOfAction(new Timestamp(dto.getDateOfAction().getTime()));
                 }
