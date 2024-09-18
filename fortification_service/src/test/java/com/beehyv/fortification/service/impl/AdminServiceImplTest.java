@@ -140,7 +140,7 @@ public class AdminServiceImplTest {
 
         // Act
         String result = adminService.updateDSL(dto);
-        assertEquals("", result);
+        assertEquals("dsl executed successfully", result);
 
 
         //Act with different type
@@ -149,14 +149,14 @@ public class AdminServiceImplTest {
         dto.setCategories(List.of(categoryDslDto));
 
         result = adminService.updateDSL(dto);
-        assertEquals("", result);
+        assertEquals("dsl executed successfully", result);
 
 
         //Act with different no DispatchLabOption
         categoryDslDto.setDispatchLabOption("random");
 
         result = adminService.updateDSL(dto);
-        assertEquals("", result);
+        assertEquals("dsl executed successfully", result);
     }
 
 }

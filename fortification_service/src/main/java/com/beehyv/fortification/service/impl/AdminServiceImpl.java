@@ -339,6 +339,13 @@ public class AdminServiceImpl implements AdminService {
                                                 RoleCategoryType.MODULE,
                                                 categoryDslDto.getTarget(),
                                                 usersStateList);
+                                        checkAndSaveRoleCategoryAndState(
+                                                Objects.requireNonNullElse(stageCategory, category),
+                                                category,
+                                                "USER",
+                                                RoleCategoryType.MODULE,
+                                                categoryDslDto.getTarget(),
+                                                usersStateList);
 
                                         List<String> labStateList = new ArrayList<>();
 
@@ -364,7 +371,13 @@ public class AdminServiceImpl implements AdminService {
                                                 RoleCategoryType.MODULE,
                                                 categoryDslDto.getTarget(),
                                                 usersStateListAdmin);
-
+                                        checkAndSaveRoleCategoryAndState(
+                                                Objects.requireNonNullElse(stageCategory, category),
+                                                category,
+                                                "ADMIN",
+                                                RoleCategoryType.MODULE,
+                                                categoryDslDto.getTarget(),
+                                                usersStateListAdmin);
                                         List<String> labStateListAdmin = new ArrayList<>();
                                         labStateListAdmin.add("approved");
                                         labStateListAdmin.add("sentLotSampleToLabTest");
@@ -379,6 +392,9 @@ public class AdminServiceImpl implements AdminService {
                                     } else {
                                         List<String> usersStateList = new ArrayList<>();
                                         usersStateList.add("approved");
+                                        usersStateList.add("sentBackRejected");
+                                        usersStateList.add("receivedRejected");
+                                        usersStateList.add("lotSampleRejected");
                                         checkAndSaveRoleCategoryAndState(
                                                 target,
                                                 category,
@@ -386,17 +402,24 @@ public class AdminServiceImpl implements AdminService {
                                                 RoleCategoryType.MODULE,
                                                 categoryDslDto.getTarget(),
                                                 usersStateList);
-
+                                        checkAndSaveRoleCategoryAndState(
+                                                Objects.requireNonNullElse(stageCategory, category),
+                                                category,
+                                                "USER",
+                                                RoleCategoryType.MODULE,
+                                                categoryDslDto.getTarget(),
+                                                usersStateList);
                                         List<String> usersStateListAdmin = new ArrayList<>();
                                         usersStateListAdmin.add("approved");
+                                        usersStateListAdmin.add("sentBackRejected");
+                                        usersStateListAdmin.add("receivedRejected");
                                         checkAndSaveRoleCategoryAndState(
-                                                category,
+                                                Objects.requireNonNullElse(stageCategory, category),
                                                 category,
                                                 "ADMIN",
                                                 RoleCategoryType.MODULE,
                                                 categoryDslDto.getTarget(),
                                                 usersStateListAdmin);
-
                                     }
 
                                 }
@@ -536,6 +559,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private void checkAndSaveRoleCategoryAndState(Category category, Category baseCategory, String role, RoleCategoryType type, List<TargetDto> target, List<String> stateList) {
+        if (roles == null) {
+            roles = new HashSet<>();
+        }
         roles.add(category.getName().toUpperCase() + "_" + role + "_" + type);
         RoleCategory roleCategory = roleCategoryManager
                 .findByCategoryAndRoleNames(category.getName(), role, type);
