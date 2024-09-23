@@ -1,0 +1,5 @@
+package com.beehyv.iam.enums;
+
+public enum ManufacturerImportType {
+    GODOWN, MANUFACTURERS, MANUFACTURERS_WITH_USERS, FSSAI_MANUFACTURERS
+}
