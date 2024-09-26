@@ -3,6 +3,7 @@ package com.beehyv.iam.model;
 import java.time.LocalDateTime;
 import com.beehyv.iam.helper.EncryptionHelper;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
@@ -18,6 +19,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 @SQLDelete(sql = "UPDATE user SET is_deleted = true WHERE id = ?", check = ResultCheckStyle.COUNT)
 @Where(clause = "is_deleted is null or is_deleted <> true")
 public class User extends Base{
@@ -60,7 +62,7 @@ public class User extends Base{
             this.userName = encryptionHelper.encrypt(userName);
         }
         catch (Exception e){
-            throw new RuntimeException("Failed to encrypt username", e);
+            log.info("Failed to encrypt username", e);
         }
     }
     public String getUserName(){
@@ -68,7 +70,8 @@ public class User extends Base{
             return encryptionHelper.decrypt(this.userName);
         }
         catch (Exception e){
-            throw new RuntimeException("Failed to decrypt username", e);
+            log.info("Failed to decrypt username", e);
+            return null;
         }
     }
     public void setEmail(String email){
@@ -76,7 +79,7 @@ public class User extends Base{
             this.email = encryptionHelper.encrypt(email);
         }
         catch (Exception e){
-            throw new RuntimeException("Failed to encrypt email", e);
+            log.info("Failed to encrypt email", e);
         }
     }
     public String getEmail(){
@@ -84,7 +87,8 @@ public class User extends Base{
             return encryptionHelper.decrypt(this.email);
         }
         catch (Exception e){
-            throw new RuntimeException("Failed to decrypt email", e);
+            log.info("Failed to decrypt email", e);
+            return null;
         }
     }
     public void setFirstName(String firstName){
@@ -92,7 +96,7 @@ public class User extends Base{
             this.firstName = encryptionHelper.encrypt(firstName);
         }
         catch (Exception e){
-            throw new RuntimeException("Failed to encrypt firstName", e);
+            log.info("Failed to encrypt firstName", e);
         }
     }
     public String getFirstName(){
@@ -100,7 +104,8 @@ public class User extends Base{
             return encryptionHelper.decrypt(this.firstName);
         }
         catch (Exception e){
-            throw new RuntimeException("Failed to decrypt firstName", e);
+            log.info("Failed to decrypt firstName", e);
+            return null;
         }
     }
     public void setLastName(String lastName){
@@ -108,7 +113,7 @@ public class User extends Base{
             this.lastName = encryptionHelper.encrypt(lastName);
         }
         catch (Exception e){
-            throw new RuntimeException("Failed to encrypt lastName", e);
+            log.info("Failed to encrypt lastName", e);
         }
     }
     public String getLastName(){
@@ -116,7 +121,8 @@ public class User extends Base{
             return encryptionHelper.decrypt(this.lastName);
         }
         catch (Exception e){
-            throw new RuntimeException("Failed to decrypt lastName", e);
+            log.info("Failed to decrypt lastName", e);
+            return null;
         }
     }
 

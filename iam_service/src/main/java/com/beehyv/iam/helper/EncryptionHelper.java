@@ -13,12 +13,12 @@ public class EncryptionHelper {
 
     private static final String ALGORITHM = "AES";
     private static final String TRANSFORMATION = "AES";
-    @Value("${encryption.64bit.key}")
+    @Value("${encryption.secret.key}")
     private String key;
 
     public String encrypt(String data) throws Exception {
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        IvParameterSpec iv = new IvParameterSpec(data.getBytes(StandardCharsets.UTF_8));
+        IvParameterSpec iv = new IvParameterSpec(key.getBytes(StandardCharsets.UTF_8));
         SecretKey secretKey = new SecretKeySpec(Base64.getDecoder().decode(key), ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
         byte[] encryptedBytes = cipher.doFinal(data.getBytes());
@@ -27,7 +27,7 @@ public class EncryptionHelper {
 
     public String decrypt(String encryptedData) throws Exception {
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        IvParameterSpec iv = new IvParameterSpec(encryptedData.getBytes(StandardCharsets.UTF_8));
+        IvParameterSpec iv = new IvParameterSpec(key.getBytes(StandardCharsets.UTF_8));
         SecretKey secretKey = new SecretKeySpec(Base64.getDecoder().decode(key), ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
         byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
