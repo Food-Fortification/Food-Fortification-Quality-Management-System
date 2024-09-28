@@ -1,8 +1,10 @@
 package com.beehyv.iam.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,9 +12,16 @@ import java.util.List;
 public class EncryptionFieldConfig {
 
     @Value("${encryption.fields}")
-    private String encryptionFields;
+    private String fields;
 
-    public List<String> getFieldsToEncrypt() {
+    private static String encryptionFields;
+
+    @PostConstruct
+    public void init(){
+        encryptionFields = fields;
+    }
+
+    public static List<String> getFieldsToEncrypt() {
         return Arrays.asList(encryptionFields.split(","));
     }
 }

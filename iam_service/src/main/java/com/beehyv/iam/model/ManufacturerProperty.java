@@ -21,9 +21,6 @@ import javax.persistence.*;
 @Where(clause = "is_deleted is null or is_deleted <> true")
 public class ManufacturerProperty extends Base {
 
-    @Transient
-    @Autowired
-    private EncryptionService encryptionService;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,14 +37,14 @@ public class ManufacturerProperty extends Base {
 
     public void setValue(String value) {
         try {
-            this.value = (String) encryptionService.encryptField(name, value);
+            this.value = (String) EncryptionService.encryptField(name, value);
         } catch (Exception e) {
             throw new RuntimeException("Failed to encrypt " + name, e);
         }
     }
     public String getValue(){
         try{
-            return (String) encryptionService.decryptField(name, this.value);
+            return (String) EncryptionService.decryptField(name, this.value);
         }
         catch (Exception e){
             log.info("Failed to decrypt " + name, e);

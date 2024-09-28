@@ -8,21 +8,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class EncryptionService {
 
-    @Autowired
-    private EncryptionHelper encryptionHelper;
-    @Autowired
-    private EncryptionFieldConfig encryptionFieldConfig;
 
-    public Object encryptField(String field, Object value) throws Exception {
-        if (encryptionFieldConfig.getFieldsToEncrypt().contains(field) && value != null) {
-            return encryptionHelper.encrypt(value.toString());
+    public static Object encryptField(String field, Object value) throws Exception {
+        if (EncryptionFieldConfig.getFieldsToEncrypt().contains(field) && value != null) {
+            return EncryptionHelper.encrypt(value.toString());
         }
         return value;
     }
 
-    public Object decryptField(String field, Object value) throws Exception {
-        if (encryptionFieldConfig.getFieldsToEncrypt().contains(field) && value != null) {
-            return encryptionHelper.decrypt(value.toString());
+    public static Object decryptField(String field, Object value) throws Exception {
+        if (EncryptionFieldConfig.getFieldsToEncrypt().contains(field) && value != null) {
+            return EncryptionHelper.decrypt(value.toString());
         }
         return value;
     }

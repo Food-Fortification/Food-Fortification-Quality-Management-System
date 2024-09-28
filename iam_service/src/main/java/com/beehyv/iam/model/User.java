@@ -23,16 +23,12 @@ import java.util.Set;
 @SQLDelete(sql = "UPDATE user SET is_deleted = true WHERE id = ?", check = ResultCheckStyle.COUNT)
 @Where(clause = "is_deleted is null or is_deleted <> true")
 public class User extends Base{
-    @Autowired
-    @Transient
-    private EncryptionHelper encryptionHelper;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String firstName;
     private String lastName;
-    @Email
     private String email;
     private String userName;
     private String password;
@@ -59,7 +55,7 @@ public class User extends Base{
 
     public void setUserName(String userName){
         try {
-            this.userName = encryptionHelper.encrypt(userName);
+            this.userName = EncryptionHelper.encrypt(userName);
         }
         catch (Exception e){
             log.info("Failed to encrypt username", e);
@@ -67,7 +63,7 @@ public class User extends Base{
     }
     public String getUserName(){
         try{
-            return encryptionHelper.decrypt(this.userName);
+            return EncryptionHelper.decrypt(this.userName);
         }
         catch (Exception e){
             log.info("Failed to decrypt username", e);
@@ -76,7 +72,7 @@ public class User extends Base{
     }
     public void setEmail(String email){
         try {
-            this.email = encryptionHelper.encrypt(email);
+            this.email = EncryptionHelper.encrypt(email);
         }
         catch (Exception e){
             log.info("Failed to encrypt email", e);
@@ -84,7 +80,7 @@ public class User extends Base{
     }
     public String getEmail(){
         try{
-            return encryptionHelper.decrypt(this.email);
+            return EncryptionHelper.decrypt(this.email);
         }
         catch (Exception e){
             log.info("Failed to decrypt email", e);
@@ -93,7 +89,7 @@ public class User extends Base{
     }
     public void setFirstName(String firstName){
         try {
-            this.firstName = encryptionHelper.encrypt(firstName);
+            this.firstName = EncryptionHelper.encrypt(firstName);
         }
         catch (Exception e){
             log.info("Failed to encrypt firstName", e);
@@ -101,7 +97,7 @@ public class User extends Base{
     }
     public String getFirstName(){
         try{
-            return encryptionHelper.decrypt(this.firstName);
+            return EncryptionHelper.decrypt(this.firstName);
         }
         catch (Exception e){
             log.info("Failed to decrypt firstName", e);
@@ -110,7 +106,7 @@ public class User extends Base{
     }
     public void setLastName(String lastName){
         try {
-            this.lastName = encryptionHelper.encrypt(lastName);
+            this.lastName = EncryptionHelper.encrypt(lastName);
         }
         catch (Exception e){
             log.info("Failed to encrypt lastName", e);
@@ -118,7 +114,7 @@ public class User extends Base{
     }
     public String getLastName(){
         try{
-            return encryptionHelper.decrypt(this.lastName);
+            return EncryptionHelper.decrypt(this.lastName);
         }
         catch (Exception e){
             log.info("Failed to decrypt lastName", e);
