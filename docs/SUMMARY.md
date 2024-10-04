@@ -33,3 +33,4 @@
       * [How to configure security filter chain](dpg-document/developer-documentation/how-to-guides/how-to-configure-security-filter-chain.md)
       * [How to configure spring activiti](dpg-document/developer-documentation/how-to-guides/how-to-configure-spring-activiti.md)
       * [How to create a Dao Class](dpg-document/developer-documentation/how-to-guides/how-to-create-a-dao-class.md)
+  * [Digital Personal Data Protection Alignment for FFQMS Application](dpg-document/digital-personal-data-protection-alignment-for-ffqms-application.md)
