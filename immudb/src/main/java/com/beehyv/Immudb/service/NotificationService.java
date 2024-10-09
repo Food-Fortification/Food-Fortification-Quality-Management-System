@@ -27,8 +27,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class NotificationService {
 
-  @Autowired(required = false)
-  private FirebaseMessaging firebaseMessaging;
+  private final FirebaseMessaging firebaseMessaging;
   @Autowired
   private NotificationEventManager manager;
 
@@ -52,7 +51,8 @@ public class NotificationService {
     previousCategoryMap.put("WAREHOUSE","MILLER");
   }
 
-  public NotificationService( NotificationEventManager manager) {
+  public NotificationService(@Autowired(required = false) FirebaseMessaging firebaseMessaging, NotificationEventManager manager) {
+    this.firebaseMessaging = firebaseMessaging;
     this.manager = manager;
   }
 
