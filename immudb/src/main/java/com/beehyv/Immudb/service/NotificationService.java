@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class NotificationService {
 
-  @Autowired
+  @Autowired(required = false)
   private FirebaseMessaging firebaseMessaging;
   @Autowired
   private NotificationEventManager manager;
@@ -38,10 +38,10 @@ public class NotificationService {
   @Value("${service.iam.baseUrl}")
   private String iamBaseUrl ;
 
-  @Value("${NOTIFICATION_IMAGE_URL}")
+  @Value("${NOTIFICATION_IMAGE_URL: }")
   private String imageUrl;
 
-  @Value("${firebase.android.channel}")
+  @Value("${firebase.android.channel: }")
   private String androidChannelId;
 
   private static final Map<String,String> previousCategoryMap = new HashMap<>();
@@ -52,8 +52,7 @@ public class NotificationService {
     previousCategoryMap.put("WAREHOUSE","MILLER");
   }
 
-  public NotificationService(FirebaseMessaging firebaseMessaging, NotificationEventManager manager) {
-    this.firebaseMessaging = firebaseMessaging;
+  public NotificationService( NotificationEventManager manager) {
     this.manager = manager;
   }
 
@@ -220,12 +219,14 @@ public class NotificationService {
           .setNotification(notification)
           .putAllData(map)
           .build();
-      try{
-        firebaseMessaging.send(message);
-        log.info("Successfully Sent! "+ message + " state: " + firebaseEvent.getCurrentStateName());
-      }catch (Exception e){
-        HttpUtils.callDeleteAPI(iamBaseUrl+ "registration/token/" + dto.getRegistrationToken());
-        log.info("error occurred " + e.getMessage());
+      if (firebaseMessaging!= null){
+        try{
+          firebaseMessaging.send(message);
+          log.info("Successfully Sent! "+ message + " state: " + firebaseEvent.getCurrentStateName());
+        }catch (Exception e){
+          HttpUtils.callDeleteAPI(iamBaseUrl+ "registration/token/" + dto.getRegistrationToken());
+          log.info("error occurred " + e.getMessage());
+        }
       }
     });
 

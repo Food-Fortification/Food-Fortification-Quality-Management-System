@@ -53,7 +53,7 @@ class NotificationServiceTest {
                 "  }\n" +
                 "]";
         when(HttpUtils.callGetAPI(any(),any())).thenReturn(jsonString);
-        notificationService = new NotificationService(firebaseMessagingMock, managerMock);
+        notificationService = new NotificationService(managerMock);
     }
     @AfterEach
     void tearDown() {
