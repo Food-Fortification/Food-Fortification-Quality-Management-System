@@ -37,9 +37,9 @@ public class Constants {
 
     @PostConstruct
     public void setProperties() {
-        LAB_SERVICE_URL = LAB_BASE_URL + "lab/";
+        LAB_SERVICE_URL = LAB_BASE_URL;
         QRCODE_UI_URL = FORTIFICATION_UI_BASE_URL;
-        IAM_SERVICE_URL = IAM_BASE_URL + "iam/";
+        IAM_SERVICE_URL = IAM_BASE_URL;
 
     }
 }
