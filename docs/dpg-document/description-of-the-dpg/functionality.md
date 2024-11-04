@@ -2,9 +2,9 @@
 
 As we are developing rice fortification systems, we have identified the need for a similar QA/QC approach for other commodities across different countries.
 
-To address this need, we have created a customizable and configurable digital public good (DPG) that can be applied to various fortification use cases across countries.
+With respect to the Fortified Food Quality Management System (FFQMS), while it is currently used for rice as a product, we have created a customizable and configurable system that can be applied to various commodities like milk, salt, and sugar. This adaptable system supports the fortification process across multiple food items.
 
-The DPG solution requires a predefined Domain-Specific Language (DSL) for initial configuration, which sets up the default parameters.
+The FFQMS requires a predefined Domain-Specific Language (DSL) for initial configuration, which sets up the default parameters.
 
 
 
