@@ -2,7 +2,7 @@
 
 ## Origin and Development
 
-### Fortified Food Quality Management System (FFQMS).
+### Food Fortification Quality Management System (FFQMS).
 
 Malnutrition continues to pose a formidable challenge worldwide, particularly in regions grappling with poverty and inadequate access to nutritious food. In the quest to combat this pervasive issue, food fortification emerges as a beacon of hope, offering a practical solution to bolster public health. This article delves into the significance of food fortification, with a spotlight on its application in India, where malnutrition remains a pressing concern.
 

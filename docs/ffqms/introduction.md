@@ -10,4 +10,4 @@ This documentation provides a comprehensive guide to understanding, implementing
 
 ## Scope
 
-This documentation covers the technical specifications, implementation steps, governance, and operational details of the Fortified Food Quality Management System (FFQMS). It is intended for developers, administrators, and end-users.
+This documentation covers the technical specifications, implementation steps, governance, and operational details of the Food Fortification Quality Management System (FFQMS). It is intended for developers, administrators, and end-users.
