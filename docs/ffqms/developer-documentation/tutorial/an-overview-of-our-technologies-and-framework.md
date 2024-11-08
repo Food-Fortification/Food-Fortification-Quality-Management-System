@@ -1,6 +1,6 @@
 # An Overview of our Technologies and Framework
 
-<figure><img src="../../../.gitbook/assets/FFQMS_Architecture.jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/architectureOverview.png" alt=""><figcaption></figcaption></figure>
 
 Food Fortification is based on the following technologies:
 
