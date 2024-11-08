@@ -4,4 +4,4 @@ In order to work on our project you should first set up a local development envi
 
 **Setup**
 
-We have documented the steps to clone and set up the project in our [README in the "Development" section](../)
+We have documented the steps to clone and set up the project in our [README in the Github Repo](https://github.com/Food-Fortification/Food-Fortification-Quality-Management-System/blob/main/README.md)
