@@ -8,4 +8,4 @@ A Domain-Specific Language (DSL) is a specialized programming or scripting langu
 * Efficiency: Changes can be made quickly and safely without deep technical knowledge or the need to modify complex underlying code.
 * Readability: The DSL’s domain-specific nature makes it more readable and understandable to non-developers who are familiar with the application’s core domain.
 
-For more information and examples on DSL for Food Fortification refer to this [section](../../description-of-the-dpg/functionality.md)
+For more information and examples on DSL for Food Fortification refer to this [section](../../description-of-ffqms/functionality.md)
