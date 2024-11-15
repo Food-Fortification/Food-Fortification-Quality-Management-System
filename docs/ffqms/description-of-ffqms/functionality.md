@@ -14,7 +14,7 @@ The FFQMS requires a predefined Domain-Specific Language (DSL) for initial confi
 2. Each stage can include:
    1. A set of required input materials
    2. Target categories to which the processed product must be delivered
-3. Batches for a category can be created from raw material lots and dispatched to the next category manufacturer or unit.
+3. Batches for a category can be created from raw material and dispatched to the next category manufacturer or unit.
 4. Lots can be created from approved batches.
 5. Both lot and batch samples can be sent to the lab for testing.
 
@@ -22,7 +22,7 @@ Considering the above, the platform can be configured to manage the following:
 
 * **Stages:** Define the stages a product goes through from raw materials to a fortified product.
 * **Raw Materials and Target Categories:** Specify the raw materials required and the target categories for each stage.
-* **Lab Testing:** Include options for lab testing during the dispatch and receipt of products
+* **Lab Testing:** Include options for lab testing during the dispatch and receipt of products. The testing process is customisable, and the tests can be made mandatory or non-mandatory depending on the use cases.&#x20;
 
 ### Sample DSL contains following fields for configuration
 

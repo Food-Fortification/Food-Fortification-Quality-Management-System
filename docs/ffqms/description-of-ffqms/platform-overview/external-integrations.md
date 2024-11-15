@@ -21,7 +21,9 @@ The manufacturer data should be unique across all platforms across India. Any ne
 
 Sample Format:
 
-{% file src="../../../.gitbook/assets/Manufacturers_Template.xlsx" %}
+Note: In the below excel, the "code" and "geoId" columns can be left as empty.
+
+{% file src="../../../.gitbook/assets/Manufacturers_Template (1).xlsx" %}
 
 #### **How Authentication works**:&#x20;
 
@@ -44,14 +46,14 @@ To submit data to the QA/QC platform, the registered subscriber must first authe
 7. BatchRejected
 8. BatchApproved
 9. LotCreated
-10. LotSampleSentToLab
-11. LotSampleRejected
-12. LotTestPassed
-13. LotTestFailed
-14. LotRejected
-15. LotApproved
-16. LotDispatched
-17. LotReceived
+10. LotDispatched
+11. LotReceived
+12. LotSampleSentToLab
+13. LotSampleRejected
+14. LotTestPassed&#x20;
+15. LotTestFailed&#x20;
+16. LotRejected
+17. LotApproved
 18. LotSentBack
 19. LotRejectedReceived
 

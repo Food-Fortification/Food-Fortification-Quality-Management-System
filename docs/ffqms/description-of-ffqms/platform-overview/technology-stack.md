@@ -2,7 +2,7 @@
 
 #### &#x20;<a href="#toc422135887" id="toc422135887"></a>
 
-![](../../../.gitbook/assets/7.png)
+![](../../../.gitbook/assets/architectureImgTextChange2.jpg)
 
 Above is a diagram showcasing the technology stack used to build the workflow software. Each tool contributed uniquely to the creation of the software.
 

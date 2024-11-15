@@ -6,7 +6,7 @@ The Food Fortification Quality Management System (FFQMS) is a digital platform d
 
 ## Purpose <a href="#toc1329815404" id="toc1329815404"></a>
 
-This documentation provides a comprehensive guide to understanding, implementing, and contributing to Food Fortification. FFQMS is aimed at ensuring the quality of fortified rice by adhering to the policies and guidelines of a specific geography (country, region, or sub-unit).
+This documentation provides a comprehensive guide to understanding, implementing, and contributing to Food Fortification. FFQMS is aimed at ensuring the quality of fortified food by adhering to the policies and guidelines of a specific geography (country, region, or sub-unit).
 
 ## Scope
 

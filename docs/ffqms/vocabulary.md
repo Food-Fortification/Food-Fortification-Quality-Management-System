@@ -11,7 +11,8 @@
 * A dispatch unit for transferring raw materials or processed products.
 * Facilitates logistics and movement through different stages.
 * Tracked with a unique identifier for quality assurance and traceability.
-* Single lot will have units from a single batch
+* Single lot will have units from a batch.
+* One batch can have multiple lots, but one lot will have only one batch
 
 ### Sample
 
@@ -21,13 +22,13 @@
 
 ### Dispatch
 
-* The process of sending a lot or sample from one manufacturer/unit to another manufacturer/unit.
+* The process of sending a lot from one manufacturer/unit to another manufacturer/unit.
 * Part of the transition process from one manufacturer/unit.
 * Ensures materials move efficiently through different stages.
 
 ### Approval
 
-* The process of accepting a lot or batch at the receiving stage.
+* The process of accepting a lot at the receiving stage.
 * Involves checking compliance with quality and specification requirements.
 * Necessary before the material is accepted for further processing.
 

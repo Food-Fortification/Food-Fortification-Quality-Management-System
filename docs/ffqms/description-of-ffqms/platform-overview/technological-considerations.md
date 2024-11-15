@@ -2,7 +2,7 @@
 
 Some of the main considerations for building this software are as follows:
 
-* Traceability — A single barcode stores the trace of all raw materials, their batch, and lot numbers along with quantities utilized for fortification. This ensures that any quality lapses can be traced back to the source.
+* Traceability — A single barcode stores the basic vendor info and the batch details. The system(In history tab, and batch history tree in the UI) stores the trace of all raw materials, their batch, and lot numbers along with quantities utilized for fortification. This ensures that any quality lapses can be traced back to the source.
 * Immutability — To maintain traceability and QA/QC, it is crucial to secure and make the database immutable and encrypted. All tracking events go to a database built on top of blockchain principles, ensuring verifiability and immutability of data.
 * Configurability — The platform can be configured across regions for workflows of other food fortification processes and to obfuscate manufacturing information in labs.
 * Event Broadcast Framework — Since the platform is designed to work with different external systems, a framework allows interested clients to register for geographical state-level events and receive their login details for access.
