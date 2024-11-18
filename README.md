@@ -34,8 +34,8 @@ Before starting the setup, ensure that the following tools and services are inst
 Start by cloning the repository and switching to the `main` branch:
 
 ```bash
-git clone https://github.com/Rice-Fortification-DPG/Food-Fortification-DPG.git
-cd Food-Fortification-DPG
+git clone https://github.com/Food-Fortification/Food-Fortification-Quality-Management-System.git
+cd Food-Fortification-Quality-Management-System
 git checkout main
 ```
 
