@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.beehyv</groupId>
+		<groupId>org.path</groupId>
 		<artifactId>parent</artifactId>
 		<version>0.0.1</version>
 		<relativePath/>
 	</parent>
-	<groupId>com.beehyv</groupId>
+	<groupId>org.path</groupId>
 	<artifactId>Immudb</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Immudb</name>
@@ -20,7 +20,7 @@
 	<packaging>jar</packaging>
 	<dependencies>
 		<dependency>
-			<groupId>com.beehyv</groupId>
+			<groupId>org.path</groupId>
 			<artifactId>parent</artifactId>
 			<version>0.0.2</version>
 		</dependency>
@@ -75,11 +75,5 @@
 		</plugins>
 		<finalName>immudb</finalName>
 	</build>
-	<repositories>
-		<repository>
-			<id>beehyv-gitlab-maven</id>
-			<url>https://git.beehyv.com/api/v4/groups/228/-/packages/maven</url>
-		</repository>
-	</repositories>
 
 </project>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Batch ' + ${data.batchNo} + ' Dispatched Successfully'">Default Title</title>
+</head>
+<body>
+<p>Hi,</p>
+<p>The Batch <span th:text="${data.batchNo}"></span> is dispatched from <span th:text="${data.sourceManufacturer}"></span> to <span th:text="${data.targetManufacturer}"></span></p>
+<p>Additional Details:</p>
+<ul>
+    <li><strong>Dispatched Lot Number:</strong> <span th:text="${data.lotNo}"></span></li>
+    <li><strong>Date of Dispatch:</strong> <span th:text="${data.dateOfDispatch}"></span></li>
+    <li><strong>Batch Name:</strong> <span th:text="${data.batchName}"></span></li>
+    <li><strong>Date of Manufacture:</strong> <span th:text="${data.dateOfManufacture}"></span></li>
+    <li><strong>Date of Expiry:</strong> <span th:text="${data.dateOfExpiry}"></span></li>
+</ul>
+<p>Best regards,</p>
+<p>Rice Fortification Support</p>
+</body>
+</html>
