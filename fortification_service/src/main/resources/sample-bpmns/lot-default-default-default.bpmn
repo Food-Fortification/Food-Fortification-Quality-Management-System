@@ -5,73 +5,73 @@
         <userTask id="dispatched" name="dispatched">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="lotReceived" name="lotReceived">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="selfTestedLot" name="selfTestedLot">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="approved" name="approved">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="sentLotSampleToLabTest" name="sentLotSampleToLabTest">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="lotSampleInLab" name="lotSampleInLab">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="lotSampleLabTestDone" name="lotSampleLabTestDone">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="lotSampleRejected" name="lotSampleRejected">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="toSendBackRejected" name="toSendBackRejected">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="sentBackRejected" name="sentBackRejected">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="receivedRejected" name="receivedRejected">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="rejected" name="rejected">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.LotTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.LotTaskListener" />
             </extensionElements>
         </userTask>
         <endEvent id="theEnd"></endEvent>

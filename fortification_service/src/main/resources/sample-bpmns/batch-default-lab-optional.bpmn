@@ -7,43 +7,43 @@
         <userTask id="created" name="created">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.BatchTaskListener"/>
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.BatchTaskListener"/>
             </extensionElements>
         </userTask>
         <userTask id="sentBatchSampleToLabTest" name="sentBatchSampleToLabTest">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.BatchTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.BatchTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="batchSampleInLab" name="batchSampleInLab">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.BatchTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.BatchTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="batchSampleLabTestDone" name="batchSampleLabTestDone">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.BatchTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.BatchTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="batchSampleRejected" name="batchSampleRejected">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.BatchTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.BatchTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="batchToDispatch" name="batchToDispatch">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.BatchTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.BatchTaskListener" />
             </extensionElements>
         </userTask>
         <userTask id="rejected" name="rejected">
             <documentation>${config}</documentation>
             <extensionElements>
-                <activiti:taskListener event="create" class="com.beehyv.fortification.listeners.BatchTaskListener" />
+                <activiti:taskListener event="create" class="listeners.org.path.fortification.BatchTaskListener" />
             </extensionElements>
         </userTask>
         <endEvent id="theEnd"></endEvent>

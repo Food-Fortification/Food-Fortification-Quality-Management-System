@@ -8,7 +8,7 @@
 		<version>2.7.8</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.beehyv</groupId>
+	<groupId>org.path</groupId>
 	<artifactId>parent</artifactId>
 	<version>0.0.2</version>
 	<name>parent</name>
@@ -103,11 +103,6 @@
 			<artifactId>spring-cloud-aws-context</artifactId>
 			<version>${spring-cloud-aws-version}</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>io.awspring.cloud</groupId>-->
-<!--			<artifactId>spring-cloud-aws-autoconfigure</artifactId>-->
-<!--			<version>${spring-cloud-aws-version}</version>-->
-<!--		</dependency>-->
 	</dependencies>
 
 
@@ -156,20 +151,5 @@
 		</plugins>
 		<finalName>${project.artifactId}</finalName>
 	</build>
-	<repositories>
-		<repository>
-			<id>beehyv-gitlab-maven</id>
-			<url>https://git.beehyv.com/api/v4/groups/228/-/packages/maven</url>
-		</repository>
-	</repositories>
-	<distributionManagement>
-		<repository>
-			<id>beehyv-gitlab-maven</id>
-			<url>https://git.beehyv.com/api/v4/projects/111/packages/maven</url>
-		</repository>
-		<snapshotRepository>
-			<id>beehyv-gitlab-maven</id>
-			<url>https://git.beehyv.com/api/v4/projects/111/packages/maven</url>
-		</snapshotRepository>
-	</distributionManagement>
+
 </project>
