@@ -17,7 +17,7 @@ To facilitate this integration, we offer a solution where stakeholders can:
 
 #### **Prerequisites for integration**:&#x20;
 
-The manufacturer data should be unique across all platforms across India. Any new platform/state trying to integrate with QA/QC platform should have the manufacturers synced. Currently fssai license number is considered as unique constraint to avoid duplicates if there are Mutiple platforms are integrated for a single geographical state. Attached below is the format for the manufacturers bulk import into the QA/QC platform.&#x20;
+The manufacturer data should be unique across all platforms across India. Any new platform/state trying to integrate with QA/QC platform should have the manufacturers synced. For the unique identification of manufacturers, unique IDs issued by the regulatory body should be used. Attached below is the format for the manufacturers bulk import into the QA/QC platform.&#x20;
 
 Sample Format:
 
