@@ -24,6 +24,7 @@ Before starting the setup, ensure that the following tools and services are inst
 
 - **Immudb**  
   Download and install Immudb from [here](https://docs.immudb.io/master/running/download.html).
+  
   NOTE: While our current implementation uses immudb for tamper-evident logging, a possible alternative could be implemented using PostgreSQL with cryptographic hashing (e.g., SHA-256). In this approach, each audit entry includes a hash of the row’s own contents (such as action, actor, timestamp, and data). These hashes are generated within the system, and the keys used for hashing are not exposed externally—ensuring that any unauthorized modification to the data would result in a hash mismatch during verification. While updates to the audit log are technically possible, they can only be performed through the controlled system logic, preserving the integrity of the log. This method may suit projects looking for a simple, transparent, and fully open-source alternative to immudb
 ---
 
