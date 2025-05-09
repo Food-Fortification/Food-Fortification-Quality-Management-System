@@ -68,10 +68,12 @@ private String manufacturerName; // Encrypted value
 - Encryption handling via `EncryptionUtil`
 
 ---
-Code Changes Snippet in service and service implentation
+Code Changes Snippet in service and service implementation
 
 ![PostgreSqlService](https://github.com/user-attachments/assets/f59d8654-2276-4558-8262-4990eabef6ff)
-![PostgreSqlServiceImplementation](https://github.com/user-attachments/assets/d3350604-84f9-4fbe-9520-5e7964db48e7)
+![PostgreSqlServiceImpl](https://github.com/user-attachments/assets/0e8103bc-a293-43d4-be5e-96143c5234f5)
+
+
 
 
 ## ⚙️ Configuration Changes
